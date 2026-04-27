@@ -12,11 +12,12 @@
   --warn:#ffb347;--blue:#5b8def;--purple:#a78bfa;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
 a{color:inherit;text-decoration:none;}
 
 /* ── LAYOUT ── */
 .wrap{max-width:1140px;margin:0 auto;padding:20px 14px 80px;}
+#calWrap{position:relative;width:100vw;left:50%;transform:translateX(-50%);padding:0 8px;box-sizing:border-box;}
 
 /* ── PROFILE ── */
 .profile{display:flex;flex-wrap:wrap;border:1px solid var(--brd);margin-bottom:28px;}
@@ -111,6 +112,9 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 @media(min-width:681px){
   .dtoggle{display:none;}
   .dcollapse{display:flex!important;flex-direction:column;}
+  .day.empty-day .dtoggle{display:block!important;font-size:13px;color:var(--muted);}
+  .day.empty-day .dcollapse{display:none!important;}
+  .day.empty-day.expanded .dcollapse{display:flex!important;flex-direction:column;}
 }
 
 /* ── WEEKLY TEST ── */
@@ -246,7 +250,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v5 · 2026-04-28 00:05</div>
+<div class="ver-bar">v6 · 2026-04-28 00:20</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -653,12 +657,16 @@ function renderWeek(wn) {
 
   // Days
   const daysHtml = Array.from({length:7}, (_,di) => {
-    const type = DTYPES[di];
     const builtTasks = w.days[di] || [];
     const customTasks = getCustomTasks(wn, di);
     const allTasks = [...builtTasks, ...customTasks];
     const isFormOpen = openForm && openForm.wn===wn && openForm.di===di;
-    const isMobileExpanded = type==='train'||type==='test'||allTasks.length>0;
+    const hasTasks = allTasks.length > 0;
+    const isSunday = di === 6;
+    const type   = isSunday ? 'test' : hasTasks ? 'train' : 'rest';
+    const dlabel = isSunday ? 'Тест' : hasTasks ? 'Тренировка' : 'Отдых';
+    const isEmpty = !hasTasks && !isSunday;
+    const isExpanded = hasTasks || isSunday;
 
     const tasksHtml = allTasks.map(t => {
       const done = isDone(t.id);
@@ -690,10 +698,10 @@ function renderWeek(wn) {
       </div>
     </div>`;
 
-    return `<div class="day ${type}${isMobileExpanded?' expanded':''}" id="day-${wn}-${di}">
+    return `<div class="day ${type}${isEmpty?' empty-day':''}${isExpanded?' expanded':''}" id="day-${wn}-${di}">
       <div class="dhead" onclick="toggleDay(${wn},${di})">
-        <div><div class="dname">${DNAMES[di]}</div><div class="dtype">${DLABELS[di]}</div></div>
-        <span class="dtoggle">${isMobileExpanded?'−':'+'}</span>
+        <div><div class="dname">${DNAMES[di]}</div><div class="dtype">${dlabel}</div></div>
+        <span class="dtoggle">${isExpanded?'−':'+'}</span>
       </div>
       <div class="dcollapse dbody">
         ${tasksHtml||''}
