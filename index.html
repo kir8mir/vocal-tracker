@@ -218,6 +218,31 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 .mbtn-ok{background:var(--ok);color:#000;flex:1;}
 .mbtn-no{background:var(--s2);color:var(--muted);}
 .mbtn-reset{background:none;border:1px solid var(--acc)!important;color:var(--acc);margin-left:auto;}
+
+/* ── PITCH DETECTOR ── */
+.pitch-fab{position:fixed;bottom:20px;right:20px;z-index:50;width:44px;height:44px;border-radius:50%;background:var(--surf);border:1px solid var(--brd);color:var(--muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 14px rgba(0,0,0,.55);transition:border-color .15s,color .15s;}
+.pitch-fab:hover{border-color:var(--acc);color:var(--acc);}
+.pitch-fab.active{border-color:var(--ok);color:var(--ok);}
+.pitch-panel{position:fixed;bottom:74px;right:20px;z-index:50;width:210px;background:var(--surf);border:1px solid var(--brd);display:none;flex-direction:column;}
+.pitch-panel.open{display:flex;}
+.pitch-ph{padding:8px 13px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;}
+.pitch-ph span{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.pitch-ph button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;}
+.pitch-ph button:hover{color:var(--acc);}
+.pitch-body{padding:12px 14px;text-align:center;}
+.pitch-note{font-family:'Anton',sans-serif;font-size:54px;letter-spacing:.02em;line-height:1;color:var(--txt);min-height:54px;transition:color .08s;}
+.pitch-note.in-tune{color:var(--ok);}
+.pitch-note.off{color:var(--warn);}
+.pitch-note.miss{color:var(--acc);}
+.pitch-hz{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin:4px 0 2px;}
+.pitch-clbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;min-height:13px;}
+.pitch-meter{height:3px;background:var(--s2);position:relative;margin:0 0 12px;}
+.pitch-mc{position:absolute;top:-4px;left:50%;width:1px;height:11px;background:#333;}
+.pitch-needle{position:absolute;top:-5px;width:13px;height:13px;border-radius:50%;background:var(--brd);transform:translateX(-50%);transition:left .08s,background .08s;left:50%;}
+.pitch-sil{font-family:'JetBrains Mono',monospace;font-size:9px;color:#36363d;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;min-height:13px;}
+.pitch-mic{width:100%;padding:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--brd);background:var(--s2);color:var(--muted);cursor:pointer;transition:border-color .15s,color .15s;}
+.pitch-mic:hover:not(.on){border-color:var(--muted);color:var(--txt);}
+.pitch-mic.on{border-color:var(--ok);color:var(--ok);}
 </style>
 </head>
 <body>
@@ -279,6 +304,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
   <div class="pi"><div class="lbl">Цель</div><div class="val">D5 via Mix</div></div>
   <div class="pi"><div class="lbl">Голос</div><div class="val">Низкий баритон</div></div>
   <div class="pi"><div class="lbl">Стиль</div><div class="val">Chester / Oliver</div></div>
+  <div class="pi"><div class="lbl">Стрик</div><div class="val" id="streak-val">0</div></div>
 </div>
 
 <!-- CALENDAR -->
@@ -332,6 +358,26 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 
 <footer>Vocal Roadmap v4 · github pages ready</footer>
 </div>
+
+<!-- PITCH DETECTOR -->
+<div class="pitch-panel" id="pitchPanel">
+  <div class="pitch-ph">
+    <span>Pitch Detector</span>
+    <button onclick="closePitch()">✕</button>
+  </div>
+  <div class="pitch-body">
+    <div class="pitch-note" id="pitchNote">—</div>
+    <div class="pitch-hz" id="pitchHz">— Hz</div>
+    <div class="pitch-clbl" id="pitchCents"></div>
+    <div class="pitch-meter">
+      <div class="pitch-mc"></div>
+      <div class="pitch-needle" id="pitchNeedle"></div>
+    </div>
+    <div class="pitch-sil" id="pitchSil"></div>
+    <button class="pitch-mic" id="pitchMicBtn" onclick="toggleMic()">&#9836; Микрофон</button>
+  </div>
+</div>
+<button class="pitch-fab" id="pitchFab" onclick="togglePitchPanel()" title="Pitch Detector">&#9836;</button>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -516,6 +562,40 @@ function setTestData(wn, d)      { S[`test:${wn}`] = d; save(); }
 
 function allWeeks() {
   return [...BUILT_IN_WEEKS, ...getExtraWeeks()];
+}
+
+// ── STREAK ───────────────────────────────────────────────────
+function isTrainingDayDone(wn, di) {
+  const w = allWeeks().find(x => x.num === wn);
+  if (!w || w.locked) return false;
+  const tasks = [...(w.days[di]||[]), ...getCustomTasks(wn, di)];
+  return tasks.length > 0 && tasks.some(t => isDone(t.id));
+}
+
+function calcStreak() {
+  const slots = [];
+  allWeeks().filter(w => !w.locked).forEach(w => {
+    [0,2,4].forEach(di => slots.push({wn:w.num, di}));
+  });
+  let last = -1;
+  for (let i = slots.length-1; i >= 0; i--) {
+    if (isTrainingDayDone(slots[i].wn, slots[i].di)) { last = i; break; }
+  }
+  if (last < 0) return 0;
+  let s = 0;
+  for (let i = last; i >= 0; i--) {
+    if (isTrainingDayDone(slots[i].wn, slots[i].di)) s++;
+    else break;
+  }
+  return s;
+}
+
+function renderStreak() {
+  const el = document.getElementById('streak-val');
+  if (!el) return;
+  const s = calcStreak();
+  el.textContent = s;
+  el.className = 'val' + (s > 0 ? ' red' : '');
 }
 
 function getProgress(wn) {
@@ -705,6 +785,7 @@ function toggleDay(wn, di) {
 function toggleTask(wn, id, val) {
   setDone(id, val);
   renderTabs();
+  renderStreak();
   const el = document.getElementById(`tk-${id}`);
   if (el) val ? el.classList.add('done-task') : el.classList.remove('done-task');
 }
@@ -812,12 +893,127 @@ function addWeek() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// PITCH DETECTOR
+// ═══════════════════════════════════════════════════════════
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let _pStream=null, _pCtx=null, _pAn=null, _pRaf=null, _micOn=false;
+
+function togglePitchPanel() {
+  const p=document.getElementById('pitchPanel'), f=document.getElementById('pitchFab');
+  p.classList.toggle('open');
+  f.classList.toggle('active', p.classList.contains('open'));
+}
+function closePitch() {
+  document.getElementById('pitchPanel').classList.remove('open');
+  document.getElementById('pitchFab').classList.remove('active');
+}
+
+function freqToNote(freq) {
+  const n = 12*Math.log2(freq/440);
+  const midi = Math.round(n)+69;
+  const cents = Math.round((n-Math.round(n))*100);
+  return { name: NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1), cents };
+}
+
+function autoCorrelate(buf, sr) {
+  const SIZE=buf.length;
+  let rms=0; for(let i=0;i<SIZE;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/SIZE);
+  if(rms<0.012) return -1;
+
+  let r1=0, r2=SIZE-1;
+  for(let i=0;i<SIZE/2;i++){ if(Math.abs(buf[i])<0.2){r1=i;break;} }
+  for(let i=1;i<SIZE/2;i++){ if(Math.abs(buf[SIZE-i])<0.2){r2=SIZE-i;break;} }
+  const b=buf.slice(r1,r2), len=b.length;
+  const maxLag=Math.min(len-2, Math.floor(sr/55)); // ~A1 lowest
+  const minLag=Math.floor(sr/1400);                // ~F6 highest
+
+  const c=new Float32Array(maxLag+1);
+  for(let i=minLag;i<=maxLag;i++)
+    for(let j=0;j<len-i;j++) c[i]+=b[j]*b[j+i];
+
+  let d=minLag;
+  while(d<maxLag&&c[d]>c[d+1]) d++;
+  let mx=-1, mp=-1;
+  for(let i=d;i<=maxLag;i++) if(c[i]>mx){mx=c[i];mp=i;}
+  if(mp<=0||mp>=maxLag) return -1;
+
+  const x1=c[mp-1],x2=c[mp],x3=c[mp+1];
+  const a=(x1+x3-2*x2)/2, bv=(x3-x1)/2;
+  return sr/(a ? mp-bv/(2*a) : mp);
+}
+
+async function toggleMic() {
+  if(_micOn){ stopMic(); return; }
+  try {
+    _pStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    _pCtx=new(window.AudioContext||window.webkitAudioContext)();
+    _pAn=_pCtx.createAnalyser(); _pAn.fftSize=2048;
+    _pCtx.createMediaStreamSource(_pStream).connect(_pAn);
+    _micOn=true;
+    document.getElementById('pitchMicBtn').textContent='⏹ Стоп';
+    document.getElementById('pitchMicBtn').classList.add('on');
+    pitchLoop();
+  } catch(e){ alert('Нет доступа к микрофону: '+e.message); }
+}
+
+function stopMic() {
+  _micOn=false; cancelAnimationFrame(_pRaf);
+  if(_pStream) _pStream.getTracks().forEach(t=>t.stop());
+  if(_pCtx) _pCtx.close();
+  _pStream=_pCtx=_pAn=null;
+  const mb=document.getElementById('pitchMicBtn');
+  mb.textContent='&#9836; Микрофон'; mb.classList.remove('on');
+  document.getElementById('pitchNote').textContent='—';
+  document.getElementById('pitchNote').className='pitch-note';
+  document.getElementById('pitchHz').textContent='— Hz';
+  document.getElementById('pitchCents').textContent='';
+  document.getElementById('pitchSil').textContent='';
+  document.getElementById('pitchNeedle').style.cssText='left:50%;background:var(--brd)';
+}
+
+function pitchLoop() {
+  if(!_micOn) return;
+  const buf=new Float32Array(_pAn.fftSize);
+  _pAn.getFloatTimeDomainData(buf);
+  const freq=autoCorrelate(buf,_pCtx.sampleRate);
+
+  const noteEl=document.getElementById('pitchNote');
+  const hzEl=document.getElementById('pitchHz');
+  const cEl=document.getElementById('pitchCents');
+  const sEl=document.getElementById('pitchSil');
+  const nEl=document.getElementById('pitchNeedle');
+
+  if(freq>55&&freq<1400){
+    const note=freqToNote(freq);
+    noteEl.textContent=note.name;
+    hzEl.textContent=freq.toFixed(1)+' Hz';
+    const c=note.cents;
+    cEl.textContent=(c>0?'+':c<0?'':'')+c+'¢';
+    sEl.textContent='';
+    const pct=50+c;
+    nEl.style.left=Math.max(4,Math.min(96,pct))+'%';
+    const abs=Math.abs(c);
+    if(abs<10){
+      noteEl.className='pitch-note in-tune'; nEl.style.background='var(--ok)';
+    } else if(abs<25){
+      noteEl.className='pitch-note off'; nEl.style.background='var(--warn)';
+    } else {
+      noteEl.className='pitch-note miss'; nEl.style.background='var(--acc)';
+    }
+  } else {
+    sEl.textContent='тишина';
+  }
+  _pRaf=requestAnimationFrame(pitchLoop);
+}
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 loadStore().then(() => {
   if (!gistToken) setSyncStatus('idle');
   renderTabs();
   renderWeek(activeWeek);
+  renderStreak();
 });
 </script>
 </body>
