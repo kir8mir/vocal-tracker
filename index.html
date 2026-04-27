@@ -128,8 +128,10 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
 .metric{background:var(--s2);border:1px solid var(--brd);padding:10px 12px;}
 .metric .lbl{margin-bottom:6px;}
-.metric input{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;padding:5px 8px;font-weight:600;}
-.metric input:focus{outline:none;border-color:var(--acc);}
+.metric input,.metric textarea{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;padding:5px 8px;font-weight:600;}
+.metric input:focus,.metric textarea:focus{outline:none;border-color:var(--acc);}
+.metric textarea{resize:vertical;min-height:58px;font-size:12px;font-weight:400;font-family:'Outfit',sans-serif;}
+.metric.wide{grid-column:1/-1;}
 /* Checks */
 .checks-list{display:flex;flex-direction:column;gap:8px;}
 .chk-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--s2);border:1px solid var(--brd);}
@@ -250,7 +252,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v6 · 2026-04-28 00:20</div>
+<div class="ver-bar">v7 · 2026-04-28 00:35</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -713,21 +715,37 @@ function renderWeek(wn) {
 
   // Weekly Voice Test
   const td = getTestData(wn);
-  const metrics = [
-    {key:'highNote', label:'Самая высокая нота (без напряжения)'},
-    {key:'mixNote',  label:'Микст стабилен на'},
-    {key:'distortion', label:'Distortion (1–10)'},
-    {key:'compression',label:'Compression (1–10)'},
-    {key:'fryscream',  label:'Fry Scream (1–10)'},
-  ];
-  const metricsHtml = metrics.map(m =>
-    `<div class="metric">
-      <div class="lbl">${m.label}</div>
-      <input type="text" value="${td[m.key]||''}" placeholder="—"
-        onchange="saveMetric(${wn},'${m.key}',this.value)"
-        oninput="saveMetric(${wn},'${m.key}',this.value)">
-    </div>`
-  ).join('');
+
+  function mInput(key, ph) {
+    return `<input type="text" value="${(td[key]||'').replace(/"/g,'&quot;')}" placeholder="${ph||'—'}"
+      oninput="saveMetric(${wn},'${key}',this.value)">`;
+  }
+  function mBlock(key, label, ph, wide) {
+    return `<div class="metric${wide?' wide':''}"><div class="lbl">${label}</div>${mInput(key,ph)}</div>`;
+  }
+
+  const rangeMetrics = `
+    ${mBlock('lowNote',  'Нижняя нота (грудной)',   'напр. D2')}
+    ${mBlock('chestTop', 'Грудной до (пассаджио)',  'напр. G3')}
+    ${mBlock('highNote', 'Верхняя без напряжения',  'напр. D4')}
+    ${mBlock('mixTop',   'Микст до',                'напр. A4')}
+    ${mBlock('beltTop',  'Белтинг до',              'напр. E4')}`;
+
+  const techMetrics = `
+    ${mBlock('breath',      'Дыхание / опора',  '1–10')}
+    ${mBlock('twang',       'Twang',            '1–10')}
+    ${mBlock('distortion',  'Distortion',       '1–10')}
+    ${mBlock('compression', 'Compression',      '1–10')}
+    ${mBlock('belting',     'Белтинг',          '1–10')}
+    ${mBlock('fryscream',   'Fry Scream',       '1–10')}`;
+
+  const sessionMetrics = `
+    ${mBlock('fatigue', 'Усталость после (1=нет, 10=полная)', '1–10')}
+    ${mBlock('overall', 'Общая оценка',                       '1–10')}
+    <div class="metric wide">
+      <div class="lbl">Заметки</div>
+      <textarea oninput="saveMetric(${wn},'notes',this.value)" placeholder="Что получилось, что нет, ощущения...">${(td['notes']||'').replace(/</g,'&lt;')}</textarea>
+    </div>`;
 
   // Checks: defaults + custom
   const customChks = td.customChecks || [];
@@ -744,7 +762,7 @@ function renderWeek(wn) {
   }).join('');
 
   const chkFormId = `chkform-${wn}`;
-  const testSaved = td._saved ? '✓ сохранено' : '— заполни в воскресенье';
+  const testSaved = td._saved ? '✓ сохранено' : '— не заполнен';
 
   c.innerHTML = `
     <div class="winfo">
@@ -755,16 +773,24 @@ function renderWeek(wn) {
     <div class="days">${daysHtml}</div>
     <div class="wtest">
       <div class="wtest-head">
-        <h3>Тест голоса — Воскресенье</h3>
+        <h3>Тест голоса</h3>
         <span class="wtest-save${td._saved?' saved':''}" id="tsave-${wn}">${testSaved}</span>
       </div>
       <div class="wtest-body">
         <div>
-          <div class="lbl" style="margin-bottom:10px">📊 Метрики</div>
-          <div class="metrics">${metricsHtml}</div>
+          <div class="lbl" style="margin-bottom:8px">Диапазон</div>
+          <div class="metrics">${rangeMetrics}</div>
         </div>
         <div>
-          <div class="lbl" style="margin-bottom:10px">✅ Проверки</div>
+          <div class="lbl" style="margin-bottom:8px">Техника (1–10)</div>
+          <div class="metrics">${techMetrics}</div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:8px">Сессия</div>
+          <div class="metrics">${sessionMetrics}</div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:10px">Проверки</div>
           <div class="checks-list" id="chklist-${wn}">${chksHtml}</div>
           <button class="add-chk-btn" onclick="toggleChkForm(${wn})">+ добавить проверку</button>
           <div class="chk-add-form" id="${chkFormId}">
