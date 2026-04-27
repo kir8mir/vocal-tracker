@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocal Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0e;--surf:#18181b;--s2:#1f1f24;--brd:#2a2a30;
+  --txt:#ededed;--muted:#888892;--acc:#ff3a2f;--ok:#5cd97a;
+  --warn:#ffb347;--blue:#5b8def;--purple:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;-webkit-tap-highlight-color:transparent;}
+a{color:inherit;text-decoration:none;}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1140px;margin:0 auto;padding:20px 14px 80px;}
+
+/* ── PROFILE ── */
+.profile{display:flex;flex-wrap:wrap;border:1px solid var(--brd);margin-bottom:28px;}
+.pi{flex:1 1 120px;padding:11px 16px;border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);}
+.lbl{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:2px;}
+.val{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.03em;}
+.val.red{color:var(--acc);}
+
+/* ── SECTION ── */
+section{margin-bottom:44px;}
+.sh{display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--txt);padding-bottom:6px;margin-bottom:18px;}
+h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-transform:uppercase;}
+.sn{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* ── TABS ── */
+.tabs-row{display:flex;align-items:center;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+.tabs-row::-webkit-scrollbar{height:3px;}
+.tabs-row::-webkit-scrollbar-thumb{background:var(--brd);}
+.wtab{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.09em;padding:5px 12px;border:1px solid var(--brd);background:var(--surf);color:var(--muted);cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
+.wtab:hover:not(.locked){border-color:var(--muted);color:var(--txt);}
+.wtab.active{border-color:var(--acc);color:var(--acc);background:var(--s2);}
+.wtab.locked{opacity:.3;cursor:default;}
+.wtab .prog{position:absolute;bottom:0;left:0;height:2px;background:var(--ok);transition:width .3s;}
+.add-week-btn{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.09em;padding:5px 12px;border:1px dashed var(--brd);background:none;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.add-week-btn:hover{border-color:var(--ok);color:var(--ok);}
+
+/* ── WEEK HEADER ── */
+.winfo{background:var(--surf);border:1px solid var(--brd);border-bottom:none;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.wtitle{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em;}
+.wphase{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--acc);text-transform:uppercase;letter-spacing:.1em;}
+.wgoal{font-size:12px;color:var(--muted);}
+
+/* ── DAYS GRID (desktop) ── */
+.days{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--brd);}
+.day{border-right:1px solid var(--brd);display:flex;flex-direction:column;}
+.day:last-child{border-right:none;}
+.dhead{padding:8px 10px 6px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:flex-start;}
+.dname{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.04em;line-height:1;}
+.dtype{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:2px;}
+.day.train .dhead{background:#1a1a1e;}
+.day.train .dtype{color:var(--acc);}
+.day.test .dhead{background:#141d16;}
+.day.test .dtype{color:var(--ok);}
+.dbody{padding:8px;flex:1;display:flex;flex-direction:column;gap:7px;}
+.dempty{padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#36363d;text-transform:uppercase;letter-spacing:.1em;}
+
+/* ── TASK ── */
+.task{border-left:2px solid var(--brd);padding:0 0 0 8px;}
+.task.theory{border-left-color:var(--blue);}
+.task.practice{border-left-color:var(--acc);}
+.task.test-t{border-left-color:var(--ok);}
+.task.custom{border-left-color:var(--purple);}
+.task.done-task{opacity:.38;}
+.task-row{display:flex;align-items:flex-start;gap:5px;}
+.tcb{margin-top:3px;flex-shrink:0;width:13px;height:13px;accent-color:var(--ok);cursor:pointer;}
+.tcontent{flex:1;min-width:0;}
+.ttype{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:2px;}
+.task.theory .ttype{color:var(--blue);}
+.task.practice .ttype{color:var(--acc);}
+.task.test-t .ttype{color:var(--ok);}
+.task.custom .ttype{color:var(--purple);}
+.tlbl{display:block;font-size:11px;font-weight:500;line-height:1.3;margin-bottom:1px;color:var(--txt);}
+.tlbl:hover{color:var(--acc);}
+.task.done-task .tlbl{text-decoration:line-through;}
+.tmeta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.tdel{background:none;border:none;color:#383840;cursor:pointer;font-size:12px;padding:1px 3px;line-height:1;flex-shrink:0;margin-top:1px;}
+.tdel:hover{color:var(--acc);}
+
+/* ── ADD TASK ── */
+.add-btn{display:flex;align-items:center;gap:4px;background:none;border:1px dashed #2e2e35;color:#444;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:4px 7px;cursor:pointer;width:100%;margin-top:3px;transition:all .15s;}
+.add-btn:hover{border-color:var(--muted);color:var(--muted);}
+.tform{background:var(--s2);border:1px solid var(--brd);padding:8px;margin-top:5px;display:none;flex-direction:column;gap:5px;}
+.tform.open{display:flex;}
+.tform select,.tform input{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'Outfit',sans-serif;font-size:12px;padding:5px 8px;}
+.tform select:focus,.tform input:focus{outline:none;border-color:var(--acc);}
+.tform-btns{display:flex;gap:5px;}
+.tform-btns button{flex:1;padding:5px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;border:none;cursor:pointer;}
+.btn-ok{background:var(--acc);color:#fff;}
+.btn-no{background:#2a2a30;color:var(--muted);}
+
+/* ── MOBILE DAYS ── */
+@media(max-width:680px){
+  .days{grid-template-columns:1fr;border:1px solid var(--brd);}
+  .day{border-right:none;border-bottom:1px solid var(--brd);}
+  .day:last-child{border-bottom:none;}
+  .dhead{cursor:pointer;}
+  .dcollapse{display:none;}
+  .day.expanded .dcollapse{display:flex;flex-direction:column;}
+  .day.train.expanded .dcollapse,.day.test.expanded .dcollapse{display:flex;}
+  .dtoggle{font-size:16px;color:var(--muted);line-height:1;}
+}
+@media(min-width:681px){
+  .dtoggle{display:none;}
+  .dcollapse{display:flex!important;flex-direction:column;}
+}
+
+/* ── WEEKLY TEST ── */
+.wtest{border:1px solid var(--brd);border-top:none;}
+.wtest-head{padding:10px 16px;border-bottom:1px solid var(--brd);background:var(--surf);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.wtest-head h3{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.04em;}
+.wtest-save{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.wtest-save.saved{color:var(--ok);}
+.wtest-body{padding:16px;display:grid;gap:20px;}
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.metric{background:var(--s2);border:1px solid var(--brd);padding:10px 12px;}
+.metric .lbl{margin-bottom:6px;}
+.metric input{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;padding:5px 8px;font-weight:600;}
+.metric input:focus{outline:none;border-color:var(--acc);}
+/* Checks */
+.checks-list{display:flex;flex-direction:column;gap:8px;}
+.chk-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--s2);border:1px solid var(--brd);}
+.chk-item.checked{border-color:#1f3325;}
+.chk-cb{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--ok);cursor:pointer;}
+.chk-lbl{flex:1;font-size:13px;line-height:1.4;}
+.chk-item.checked .chk-lbl{color:var(--ok);text-decoration:line-through;opacity:.6;}
+.chk-del{background:none;border:none;color:#383840;cursor:pointer;font-size:12px;padding:2px;line-height:1;}
+.chk-del:hover{color:var(--acc);}
+.add-chk-btn{display:flex;align-items:center;gap:6px;background:none;border:1px dashed #2e2e35;color:#444;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;padding:7px 10px;cursor:pointer;width:100%;transition:all .15s;}
+.add-chk-btn:hover{border-color:var(--muted);color:var(--muted);}
+.chk-add-form{display:none;gap:6px;margin-top:4px;}
+.chk-add-form.open{display:flex;}
+.chk-add-form input{flex:1;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'Outfit',sans-serif;font-size:13px;padding:6px 10px;}
+.chk-add-form input:focus{outline:none;border-color:var(--acc);}
+.chk-add-form button{padding:6px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;border:none;cursor:pointer;}
+
+/* ── ADD WEEK FORM ── */
+.add-week-form{background:var(--surf);border:1px solid var(--ok);padding:16px;margin-bottom:12px;display:none;flex-direction:column;gap:8px;}
+.add-week-form.open{display:flex;}
+.add-week-form input,.add-week-form select{background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'Outfit',sans-serif;font-size:13px;padding:7px 10px;width:100%;}
+.add-week-form input:focus{outline:none;border-color:var(--ok);}
+.aw-btns{display:flex;gap:8px;}
+.aw-btns button{flex:1;padding:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;border:none;cursor:pointer;}
+.aw-save{background:var(--ok);color:#000;}
+.aw-cancel{background:#2a2a30;color:var(--muted);}
+
+/* ── LOCKED ── */
+.locked-wk{padding:32px;text-align:center;border:1px solid var(--brd);border-top:none;}
+.locked-wk p{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;}
+
+/* ── RESOURCES ── */
+.resources{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+.resource{background:var(--surf);border:1px solid var(--brd);padding:16px;transition:border-color .2s,transform .2s;}
+.resource:hover{border-color:var(--acc);transform:translateY(-2px);}
+.rrole{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px;}
+.resource h3{font-family:'Anton',sans-serif;font-size:21px;letter-spacing:.03em;margin-bottom:6px;}
+.resource p{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.resource a{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt);border-bottom:1px solid var(--acc);padding-bottom:2px;}
+.resource a:hover{color:var(--acc);}
+
+/* ── HEALTH ── */
+details{background:var(--surf);border:1px solid var(--brd);margin-bottom:10px;}
+details[open]{border-color:var(--acc);}
+summary{padding:13px 16px;cursor:pointer;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.04em;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+summary::after{content:'+';font-size:20px;font-family:'JetBrains Mono',monospace;color:var(--acc);}
+details[open] summary::after{content:'−';}
+.dc{padding:0 16px 16px;}
+.cs{border-left:2px solid var(--acc);padding:5px 0 5px 12px;margin-bottom:11px;}
+.cs strong{font-family:'Anton',sans-serif;font-size:15px;display:block;margin-bottom:2px;}
+.cs .td{font-size:12px;margin:3px 0;}
+.cs .no{color:var(--ok);font-size:11px;}
+.cs .bd{color:var(--acc);font-size:11px;}
+.traffic{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px;}
+.light{padding:11px;border:1px solid var(--brd);background:var(--s2);}
+.light.green{border-left:3px solid var(--ok);}
+.light.yellow{border-left:3px solid var(--warn);}
+.light.red{border-left:3px solid var(--acc);}
+.light h4{font-family:'Anton',sans-serif;font-size:14px;margin-bottom:2px;}
+.light p{font-size:11px;color:var(--muted);}
+
+footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;}
+
+/* ── SYNC BAR ── */
+.sync-bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:16px;}
+.sync-st{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+.sync-st.ok{color:var(--ok);}
+.sync-st.err{color:var(--acc);}
+.sync-btn{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.09em;padding:4px 10px;border:1px solid var(--brd);background:var(--surf);color:var(--muted);cursor:pointer;}
+.sync-btn:hover{border-color:var(--ok);color:var(--ok);}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surf);border:1px solid var(--brd);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--brd);font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em;}
+.modal-head button{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+.modal-head button:hover{color:var(--acc);}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:16px;}
+.setup-step{display:flex;gap:12px;align-items:flex-start;}
+.step-num{font-family:'Anton',sans-serif;font-size:28px;color:var(--acc);line-height:1;flex-shrink:0;width:28px;}
+.step-body{flex:1;}
+.step-title{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--txt);margin-bottom:6px;}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.step-desc a{color:var(--ok);border-bottom:1px solid var(--ok);}
+.modal-body input[type=password],.modal-body input[type=text]{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 10px;}
+.modal-body input:focus{outline:none;border-color:var(--ok);}
+.modal-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.modal-btns button{padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:none;cursor:pointer;}
+.mbtn-ok{background:var(--ok);color:#000;flex:1;}
+.mbtn-no{background:var(--s2);color:var(--muted);}
+.mbtn-reset{background:none;border:1px solid var(--acc)!important;color:var(--acc);margin-left:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- SYNC BAR -->
+<div class="sync-bar">
+  <span class="sync-st" id="sync-status">— не настроено</span>
+  <button class="sync-btn" onclick="openSetup()">⚙ Gist Sync</button>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setup-modal" onclick="if(event.target===this)closeSetup()">
+  <div class="modal">
+    <div class="modal-head"><span>GitHub Gist Sync</span><button onclick="closeSetup()">✕</button></div>
+    <div class="modal-body">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Создай Personal Access Token</div>
+          <div class="step-desc">Открой <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+          Note: любое имя &nbsp;·&nbsp; Expiration: No expiration &nbsp;·&nbsp; Scope: ✅ <strong>gist</strong><br>
+          Нажми «Generate token» и скопируй.</div>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Вставь токен</div>
+          <input type="password" id="inp-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Gist ID (необязательно)</div>
+          <div class="step-desc">Первый раз — оставь пустым, Gist создастся автоматически.<br>
+          На другом устройстве — вставь ID из шага ниже.</div>
+          <input type="text" id="inp-gist-id" placeholder="оставь пустым → создастся автоматически">
+          <div id="created-msg" style="display:none;margin-top:10px;padding:10px;background:var(--s2);border:1px solid var(--ok);">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ok);margin-bottom:4px;">✓ Gist создан!</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Твой Gist ID — сохрани его для других устройств:</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt);word-break:break-all;" id="created-id"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="mbtn-ok" onclick="setupSave()">Подключить</button>
+        <button class="mbtn-no" onclick="closeSetup()">Отмена</button>
+        <button class="mbtn-reset" onclick="setupClear()">Сбросить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="profile">
+  <div class="pi"><div class="lbl">Диапазон сейчас</div><div class="val red">D2 — D4</div></div>
+  <div class="pi"><div class="lbl">Цель</div><div class="val">D5 via Mix</div></div>
+  <div class="pi"><div class="lbl">Голос</div><div class="val">Низкий баритон</div></div>
+  <div class="pi"><div class="lbl">Стиль</div><div class="val">Chester / Oliver</div></div>
+</div>
+
+<!-- CALENDAR -->
+<section>
+  <div class="sh"><h2>Календарь</h2><div class="sn">// 01</div></div>
+  <div class="tabs-row" id="tabs">
+    <!-- rendered by JS -->
+    <button class="add-week-btn" onclick="toggleAddWeek()">+ неделя</button>
+  </div>
+  <div class="add-week-form" id="awForm">
+    <div class="lbl" style="margin-bottom:0">Новая неделя</div>
+    <input type="text" id="awPhase" placeholder="Фаза (напр. Фаза 2 — Микст Intro)">
+    <input type="text" id="awGoal" placeholder="Цель недели (необязательно)">
+    <div class="aw-btns">
+      <button class="aw-save" onclick="addWeek()">Добавить</button>
+      <button class="aw-cancel" onclick="toggleAddWeek()">Отмена</button>
+    </div>
+  </div>
+  <div id="calWrap"></div>
+</section>
+
+<!-- RESOURCES -->
+<section>
+  <div class="sh"><h2>Ресурсы</h2><div class="sn">// 02</div></div>
+  <div class="resources">
+    <div class="resource"><div class="rrole">Теория &amp; Концепции</div><h3>NYVC / Justin Stoney</h3><p>Глубокие объяснения регистров, микста, белтинга. Тренер обладателей Tony / Emmy / Grammy.</p><a href="https://www.youtube.com/@NewYorkVocalCoaching" target="_blank">→ youtube.com/@NewYorkVocalCoaching</a></div>
+    <div class="resource"><div class="rrole">Практика &amp; Follow-along</div><h3>Chris Liepe</h3><p>Специалист по агрессивному вокалу: микст, дисторшн, белтинг, скрим. Формат «повторяй за мной».</p><a href="https://www.youtube.com/@chrisliepe" target="_blank">→ youtube.com/@chrisliepe</a></div>
+    <div class="resource"><div class="rrole">Экстрим вокал — Неделя 1+</div><h3>Sing And Scream</h3><p>Структурированный гайд по фрай-скриму (CVT + Toni Linke). Параллельно с базой с Недели 1.</p><a href="https://singandscream.com/how-to-fry-scream/" target="_blank">→ singandscream.com</a></div>
+  </div>
+</section>
+
+<!-- HEALTH CHECK -->
+<section>
+  <div class="sh"><h2>Vocal Health Check</h2><div class="sn">// 03</div></div>
+  <details>
+    <summary>Протокол проверки — 30 сек перед тренировкой</summary>
+    <div class="dc">
+      <p style="margin-bottom:11px;color:var(--muted);font-size:12px;">Если красный — отдых, не петь.</p>
+      <div class="cs"><strong>1. Говорный голос</strong><div class="td">«Привет, как дела сегодня?»</div><div class="no">✓ Звучит как обычно</div><div class="bd">✗ Хрипит / тоньше / «не твой»</div></div>
+      <div class="cs"><strong>2. Головной голос</strong><div class="td">Тихий «woo-oo-oo» на фальцете</div><div class="no">✓ Чистый, лёгкий</div><div class="bd">✗ Не получается / breathy</div></div>
+      <div class="cs"><strong>3. Сирена</strong><div class="td">Тихая «ng» снизу до верха</div><div class="no">✓ Плавно, без срывов</div><div class="bd">✗ Срывается / «дыры»</div></div>
+      <div class="cs"><strong>4. Ощущения</strong><div class="td">Сглотни, прислушайся</div><div class="no">✓ Ничего не чувствуешь</div><div class="bd">✗ Першит / боль / «комок»</div></div>
+      <div class="traffic">
+        <div class="light green"><h4>🟢 Зелёный</h4><p>Все 4 ✓ — обычная тренировка.</p></div>
+        <div class="light yellow"><h4>🟡 Жёлтый</h4><p>Першение — только разогрев 10 мин.</p></div>
+        <div class="light red"><h4>🔴 Красный</h4><p>Боль / хрипота — полный отдых.</p></div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<footer>Vocal Roadmap v4 · github pages ready</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const DNAMES  = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+const DTYPES  = ['train','rest','train','rest','train','rest','test'];
+const DLABELS = ['Тренировка','Отдых','Тренировка','Отдых','Тренировка','Отдых','Тест'];
+
+const BUILT_IN_WEEKS = [
+  {num:1, phase:'Фаза 1 — Foundation', goal:'Дыхание · осознанность регистров · первый разогрев',
+    days:{
+      0:[
+        {id:'w1d0t1',type:'theory',label:'VLTTW Ep.98 — Beginners Part 1',url:'https://www.youtube.com/watch?v=1dPPo3MvTbc',meta:'~17 мин'},
+        {id:'w1d0t2',type:'theory',label:'VLTTW Ep.99 — Beginners Part 2',url:'https://www.youtube.com/watch?v=9427xS0X1dM',meta:'~16 мин · смотреть подряд'},
+      ],
+      2:[
+        {id:'w1d2p1',type:'practice',label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'~15 мин · повторять за тренером'},
+        {id:'w1d2e1',type:'practice',label:'SingAndScream — Component 1: Twang (шаг 1)',url:'https://singandscream.com/how-to-fry-scream/',meta:'10 мин · читай гайд, пробуй Twang'},
+      ],
+      4:[
+        {id:'w1d4p1',type:'practice',label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'~15 мин · повторять'},
+        {id:'w1d4e2',type:'practice',label:'SingAndScream — Component 1: Twang → Rasp/Buzz',url:'https://singandscream.com/how-to-fry-scream/',meta:'10 мин · пробуй переход'},
+      ],
+      6:[
+        {id:'w1d6t1',type:'test-t',label:'Запись голоса — Baseline',url:null,meta:'5 мин · сохрани «Неделя_1_baseline»'},
+      ],
+    }
+  },
+  {num:2, phase:'Фаза 1 — Foundation', goal:'', days:{}},
+  {num:3, phase:'Фаза 1 — Foundation', goal:'', days:{}},
+  {num:4, phase:'Фаза 1 — Foundation', goal:'', days:{}},
+  {num:5, phase:'Фаза 2 — Микст Intro', goal:'', days:{}, locked:true},
+  {num:6, phase:'Фаза 2 — Микст Intro', goal:'', days:{}, locked:true},
+  {num:7, phase:'Фаза 2 — Микст Intro', goal:'', days:{}, locked:true},
+  {num:8, phase:'Фаза 2 — Микст Intro', goal:'', days:{}, locked:true},
+];
+
+const DEFAULT_CHECKS = [
+  {id:'dc1', label:'Голос не устал после тренировки'},
+  {id:'dc2', label:'Нет першения / боли на следующий день'},
+  {id:'dc3', label:'Сирена «ng» проходит плавно'},
+  {id:'dc4', label:'Головной голос звучит чисто'},
+  {id:'dc5', label:'Нет напряжения в горле / шее'},
+];
+
+// ═══════════════════════════════════════════════════════════
+// STORE
+// ═══════════════════════════════════════════════════════════
+// ── GIST SYNC ────────────────────────────────────────────────
+const GIST_FILE = 'vocal-roadmap-data.json';
+let gistToken = localStorage.getItem('vrm-token') || '';
+let gistId    = localStorage.getItem('vrm-gist-id') || '';
+
+function setSyncStatus(s, msg) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = {
+    idle:   '— не настроено',
+    saving: '⟳ сохранение...',
+    saved:  '✓ синхронизировано',
+    loading:'⟳ загрузка...',
+    error:  '⚠ ' + (msg||'ошибка'),
+  };
+  el.textContent = map[s] || s;
+  el.className = 'sync-st' + (s==='saved'?' ok':s==='error'?' err':'');
+}
+
+async function gistLoad() {
+  if (!gistToken || !gistId) return null;
+  setSyncStatus('loading');
+  try {
+    const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers:{Authorization:`token ${gistToken}`,Accept:'application/vnd.github.v3+json'}
+    });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const content = d.files?.[GIST_FILE]?.content;
+    setSyncStatus('saved');
+    return content ? JSON.parse(content) : null;
+  } catch(e) { setSyncStatus('error', e.message); return null; }
+}
+
+async function gistSave() {
+  if (!gistToken || !gistId) { localStorage.setItem('vrm-v4', JSON.stringify(S)); return; }
+  setSyncStatus('saving');
+  try {
+    const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method:'PATCH',
+      headers:{Authorization:`token ${gistToken}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body: JSON.stringify({files:{[GIST_FILE]:{content:JSON.stringify(S)}}})
+    });
+    if (!r.ok) throw new Error(r.status);
+    setSyncStatus('saved');
+  } catch(e) { setSyncStatus('error', e.message); localStorage.setItem('vrm-v4', JSON.stringify(S)); }
+}
+
+async function gistCreate() {
+  setSyncStatus('saving');
+  try {
+    const r = await fetch('https://api.github.com/gists', {
+      method:'POST',
+      headers:{Authorization:`token ${gistToken}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body: JSON.stringify({description:'Vocal Roadmap Data',public:false,files:{[GIST_FILE]:{content:'{}'}}})
+    });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    gistId = d.id;
+    localStorage.setItem('vrm-gist-id', gistId);
+    document.getElementById('inp-gist-id').value = gistId;
+    setSyncStatus('saved');
+    return gistId;
+  } catch(e) { setSyncStatus('error', e.message); return null; }
+}
+
+// ── STORE ────────────────────────────────────────────────────
+let S = {};
+
+async function loadStore() {
+  if (gistToken && gistId) {
+    const remote = await gistLoad();
+    if (remote) { S = remote; return; }
+  }
+  try { const raw = localStorage.getItem('vrm-v4'); if (raw) S = JSON.parse(raw); } catch(e) {}
+}
+
+let _saveTimer = null;
+function save() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => gistSave(), 800);
+}
+
+// ── GIST SETUP ACTIONS ───────────────────────────────────────
+function openSetup() {
+  document.getElementById('inp-token').value = gistToken || '';
+  document.getElementById('inp-gist-id').value = gistId || '';
+  document.getElementById('created-msg').style.display = 'none';
+  document.getElementById('setup-modal').classList.add('open');
+}
+function closeSetup(){ document.getElementById('setup-modal').classList.remove('open'); }
+
+async function setupSave() {
+  const token = document.getElementById('inp-token').value.trim();
+  const id    = document.getElementById('inp-gist-id').value.trim();
+  if (!token) { alert('Введи токен'); return; }
+  gistToken = token;
+  localStorage.setItem('vrm-token', token);
+  if (id) {
+    gistId = id;
+    localStorage.setItem('vrm-gist-id', id);
+    // load from existing gist
+    const remote = await gistLoad();
+    if (remote) { S = remote; renderTabs(); renderWeek(activeWeek); }
+  } else {
+    // create new gist
+    await gistCreate();
+    document.getElementById('inp-gist-id').value = gistId;
+    document.getElementById('created-id').textContent = gistId;
+    document.getElementById('created-msg').style.display = 'block';
+  }
+  closeSetup();
+}
+
+function setupClear() {
+  if (!confirm('Сбросить настройки Gist? Данные в Gist не удалятся.')) return;
+  localStorage.removeItem('vrm-token');
+  localStorage.removeItem('vrm-gist-id');
+  gistToken = ''; gistId = '';
+  setSyncStatus('idle');
+  openSetup();
+}
+
+// helpers
+function getCustomTasks(wn, di)  { return S[`ct:${wn}:${di}`] || []; }
+function setCustomTasks(wn, di, arr) { S[`ct:${wn}:${di}`] = arr; save(); }
+function isDone(id)              { return !!S[`done:${id}`]; }
+function setDone(id, v)          { S[`done:${id}`] = v; save(); }
+function getExtraWeeks()         { return S['extra-weeks'] || []; }
+function setExtraWeeks(arr)      { S['extra-weeks'] = arr; save(); }
+function getTestData(wn)         { return S[`test:${wn}`] || {}; }
+function setTestData(wn, d)      { S[`test:${wn}`] = d; save(); }
+
+function allWeeks() {
+  return [...BUILT_IN_WEEKS, ...getExtraWeeks()];
+}
+
+function getProgress(wn) {
+  const w = allWeeks().find(x => x.num === wn);
+  if (!w || w.locked) return 0;
+  let total = 0, done = 0;
+  for (let d = 0; d < 7; d++) {
+    const tasks = [...(w.days[d] || []), ...getCustomTasks(wn, d)];
+    tasks.forEach(t => { total++; if (isDone(t.id)) done++; });
+  }
+  return total ? Math.round(done / total * 100) : 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let activeWeek = 1;
+let openForm = null;    // {wn, di}
+let openChkForm = false;
+
+// ═══════════════════════════════════════════════════════════
+// RENDER TABS
+// ═══════════════════════════════════════════════════════════
+function renderTabs() {
+  const container = document.getElementById('tabs');
+  const addBtn = container.querySelector('.add-week-btn');
+  // remove all but the add button
+  [...container.children].forEach(c => { if (!c.classList.contains('add-week-btn')) c.remove(); });
+
+  allWeeks().forEach(w => {
+    const pct = getProgress(w.num);
+    const btn = document.createElement('button');
+    btn.className = 'wtab' + (w.locked?' locked':'') + (w.num===activeWeek?' active':'');
+    btn.title = w.phase;
+    btn.innerHTML = `Нед.${w.num}${pct>0?`<span class="prog" style="width:${pct}%"></span>`:''}`;
+    if (!w.locked) btn.onclick = () => setWeek(w.num);
+    container.insertBefore(btn, addBtn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER WEEK
+// ═══════════════════════════════════════════════════════════
+function renderWeek(wn) {
+  const w = allWeeks().find(x => x.num === wn);
+  const c = document.getElementById('calWrap');
+  if (!w) return;
+
+  if (w.locked) {
+    c.innerHTML = `
+      <div class="winfo"><div class="wtitle">Неделя ${wn}</div><div class="wphase">${w.phase}</div></div>
+      <div class="locked-wk"><p>🔒 Locked — заполним когда дойдём</p></div>`;
+    return;
+  }
+
+  // Days
+  const daysHtml = Array.from({length:7}, (_,di) => {
+    const type = DTYPES[di];
+    const builtTasks = w.days[di] || [];
+    const customTasks = getCustomTasks(wn, di);
+    const allTasks = [...builtTasks, ...customTasks];
+    const isFormOpen = openForm && openForm.wn===wn && openForm.di===di;
+    const isMobileExpanded = type==='train'||type==='test'||allTasks.length>0;
+
+    const tasksHtml = allTasks.map(t => {
+      const done = isDone(t.id);
+      const isCustom = !!t.custom;
+      const typeLabel = {theory:'Теория',practice:'Практика','test-t':'Тест',custom:'Custom'}[t.type]||'';
+      return `<div class="task ${t.type}${done?' done-task':''}" id="tk-${t.id}">
+        <div class="task-row">
+          <input type="checkbox" class="tcb" ${done?'checked':''} onchange="toggleTask(${wn},'${t.id}',this.checked)">
+          <div class="tcontent">
+            <div class="ttype">${typeLabel}</div>
+            ${t.url
+              ? `<a class="tlbl" href="${t.url}" target="_blank">${t.label}</a>`
+              : `<span class="tlbl">${t.label}</span>`}
+            ${t.meta?`<div class="tmeta">${t.meta}</div>`:''}
+          </div>
+          ${isCustom?`<button class="tdel" onclick="delTask(${wn},${di},'${t.id}')">✕</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+
+    const formHtml = `<div class="tform${isFormOpen?' open':''}" id="tf-${wn}-${di}">
+      <select id="fty-${wn}-${di}"><option value="theory">Теория</option><option value="practice" selected>Практика</option><option value="test-t">Тест</option><option value="custom">Custom</option></select>
+      <input type="text" id="flb-${wn}-${di}" placeholder="Название">
+      <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)">
+      <input type="text" id="fme-${wn}-${di}" placeholder="Заметка / время">
+      <div class="tform-btns">
+        <button class="btn-ok" onclick="saveTask(${wn},${di})">Сохранить</button>
+        <button class="btn-no" onclick="closeForm()">Отмена</button>
+      </div>
+    </div>`;
+
+    return `<div class="day ${type}${isMobileExpanded?' expanded':''}" id="day-${wn}-${di}">
+      <div class="dhead" onclick="toggleDay(${wn},${di})">
+        <div><div class="dname">${DNAMES[di]}</div><div class="dtype">${DLABELS[di]}</div></div>
+        <span class="dtoggle">${isMobileExpanded?'−':'+'}</span>
+      </div>
+      <div class="dcollapse dbody">
+        ${tasksHtml||''}
+        <button class="add-btn" onclick="openTaskForm(${wn},${di});event.stopPropagation()">+ задача</button>
+        ${formHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Weekly Voice Test
+  const td = getTestData(wn);
+  const metrics = [
+    {key:'highNote', label:'Самая высокая нота (без напряжения)'},
+    {key:'mixNote',  label:'Микст стабилен на'},
+    {key:'distortion', label:'Distortion (1–10)'},
+    {key:'compression',label:'Compression (1–10)'},
+    {key:'fryscream',  label:'Fry Scream (1–10)'},
+  ];
+  const metricsHtml = metrics.map(m =>
+    `<div class="metric">
+      <div class="lbl">${m.label}</div>
+      <input type="text" value="${td[m.key]||''}" placeholder="—"
+        onchange="saveMetric(${wn},'${m.key}',this.value)"
+        oninput="saveMetric(${wn},'${m.key}',this.value)">
+    </div>`
+  ).join('');
+
+  // Checks: defaults + custom
+  const customChks = td.customChecks || [];
+  const allChks = [...DEFAULT_CHECKS, ...customChks];
+  const chksHtml = allChks.map(ch => {
+    const checked = !!(td.checks||{})[ch.id];
+    const isCustom = !!ch.custom;
+    return `<div class="chk-item${checked?' checked':''}" id="chk-${wn}-${ch.id}">
+      <input type="checkbox" class="chk-cb" ${checked?'checked':''}
+        onchange="toggleCheck(${wn},'${ch.id}',this.checked)">
+      <span class="chk-lbl">${ch.label}</span>
+      ${isCustom?`<button class="chk-del" onclick="delCheck(${wn},'${ch.id}')">✕</button>`:''}
+    </div>`;
+  }).join('');
+
+  const chkFormId = `chkform-${wn}`;
+  const testSaved = td._saved ? '✓ сохранено' : '— заполни в воскресенье';
+
+  c.innerHTML = `
+    <div class="winfo">
+      <div class="wtitle">Неделя ${wn}</div>
+      <div class="wphase">${w.phase}</div>
+      ${w.goal?`<div class="wgoal">${w.goal}</div>`:''}
+    </div>
+    <div class="days">${daysHtml}</div>
+    <div class="wtest">
+      <div class="wtest-head">
+        <h3>Тест голоса — Воскресенье</h3>
+        <span class="wtest-save${td._saved?' saved':''}" id="tsave-${wn}">${testSaved}</span>
+      </div>
+      <div class="wtest-body">
+        <div>
+          <div class="lbl" style="margin-bottom:10px">📊 Метрики</div>
+          <div class="metrics">${metricsHtml}</div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:10px">✅ Проверки</div>
+          <div class="checks-list" id="chklist-${wn}">${chksHtml}</div>
+          <button class="add-chk-btn" onclick="toggleChkForm(${wn})">+ добавить проверку</button>
+          <div class="chk-add-form" id="${chkFormId}">
+            <input type="text" id="chkinput-${wn}" placeholder="Текст проверки">
+            <button class="btn-ok" onclick="addCheck(${wn})">+</button>
+            <button class="btn-no" onclick="toggleChkForm(${wn})">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════
+function setWeek(wn) { activeWeek=wn; renderTabs(); renderWeek(wn); }
+
+function toggleDay(wn, di) {
+  const el = document.getElementById(`day-${wn}-${di}`);
+  if (!el) return;
+  el.classList.toggle('expanded');
+  const tog = el.querySelector('.dtoggle');
+  if (tog) tog.textContent = el.classList.contains('expanded') ? '−' : '+';
+}
+
+function toggleTask(wn, id, val) {
+  setDone(id, val);
+  renderTabs();
+  const el = document.getElementById(`tk-${id}`);
+  if (el) val ? el.classList.add('done-task') : el.classList.remove('done-task');
+}
+
+function openTaskForm(wn, di) {
+  openForm = {wn, di};
+  renderWeek(wn);
+  setTimeout(() => { const el = document.getElementById(`flb-${wn}-${di}`); if(el) el.focus(); }, 50);
+}
+function closeForm() { openForm=null; renderWeek(activeWeek); }
+
+function saveTask(wn, di) {
+  const label = document.getElementById(`flb-${wn}-${di}`).value.trim();
+  if (!label) return;
+  const type = document.getElementById(`fty-${wn}-${di}`).value;
+  const url  = document.getElementById(`fur-${wn}-${di}`).value.trim()||null;
+  const meta = document.getElementById(`fme-${wn}-${di}`).value.trim();
+  const id   = `c_${wn}_${di}_${Date.now()}`;
+  const arr  = getCustomTasks(wn, di);
+  arr.push({id, type, label, url, meta, custom:true});
+  setCustomTasks(wn, di, arr);
+  openForm = null;
+  renderWeek(wn); renderTabs();
+}
+
+function delTask(wn, di, id) {
+  setCustomTasks(wn, di, getCustomTasks(wn,di).filter(t=>t.id!==id));
+  delete S[`done:${id}`]; save();
+  renderWeek(wn); renderTabs();
+}
+
+// Metrics & checks
+let metricTimers = {};
+function saveMetric(wn, key, val) {
+  const td = getTestData(wn);
+  td[key] = val; td._saved = true;
+  setTestData(wn, td);
+  clearTimeout(metricTimers[`${wn}_${key}`]);
+  metricTimers[`${wn}_${key}`] = setTimeout(() => {
+    const el = document.getElementById(`tsave-${wn}`);
+    if (el) { el.textContent='✓ сохранено'; el.classList.add('saved'); }
+  }, 500);
+}
+
+function toggleCheck(wn, id, val) {
+  const td = getTestData(wn);
+  if (!td.checks) td.checks = {};
+  td.checks[id] = val; td._saved = true;
+  setTestData(wn, td);
+  const el = document.getElementById(`chk-${wn}-${id}`);
+  if (el) val ? el.classList.add('checked') : el.classList.remove('checked');
+  const sel = document.getElementById(`tsave-${wn}`);
+  if (sel) { sel.textContent='✓ сохранено'; sel.classList.add('saved'); }
+}
+
+function toggleChkForm(wn) {
+  const el = document.getElementById(`chkform-${wn}`);
+  if (!el) return;
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) {
+    setTimeout(() => { const i=document.getElementById(`chkinput-${wn}`); if(i)i.focus(); },50);
+  }
+}
+
+function addCheck(wn) {
+  const inp = document.getElementById(`chkinput-${wn}`);
+  const label = inp ? inp.value.trim() : '';
+  if (!label) return;
+  const td = getTestData(wn);
+  if (!td.customChecks) td.customChecks = [];
+  const id = `cc_${wn}_${Date.now()}`;
+  td.customChecks.push({id, label, custom:true});
+  td._saved = true;
+  setTestData(wn, td);
+  renderWeek(wn);
+}
+
+function delCheck(wn, id) {
+  const td = getTestData(wn);
+  td.customChecks = (td.customChecks||[]).filter(c=>c.id!==id);
+  if (td.checks) delete td.checks[id];
+  setTestData(wn, td);
+  renderWeek(wn);
+}
+
+// Add week
+function toggleAddWeek() {
+  const f = document.getElementById('awForm');
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) document.getElementById('awPhase').focus();
+}
+
+function addWeek() {
+  const phase = document.getElementById('awPhase').value.trim() || 'Новая фаза';
+  const goal  = document.getElementById('awGoal').value.trim();
+  const weeks = allWeeks();
+  const maxNum = Math.max(...weeks.map(w=>w.num));
+  const extra  = getExtraWeeks();
+  extra.push({num: maxNum+1, phase, goal, days:{}});
+  setExtraWeeks(extra);
+  document.getElementById('awPhase').value = '';
+  document.getElementById('awGoal').value  = '';
+  document.getElementById('awForm').classList.remove('open');
+  renderTabs();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+loadStore().then(() => {
+  if (!gistToken) setSyncStatus('idle');
+  renderTabs();
+  renderWeek(activeWeek);
+});
+</script>
+</body>
+</html>
