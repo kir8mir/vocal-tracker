@@ -221,10 +221,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 .mbtn-reset{background:none;border:1px solid var(--acc)!important;color:var(--acc);margin-left:auto;}
 
 /* ── PITCH DETECTOR ── */
-.pitch-fab{position:fixed;bottom:20px;right:20px;z-index:50;width:44px;height:44px;border-radius:50%;background:var(--surf);border:1px solid var(--brd);color:var(--muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 14px rgba(0,0,0,.55);transition:border-color .15s,color .15s;}
-.pitch-fab:hover{border-color:var(--acc);color:var(--acc);}
-.pitch-fab.active{border-color:var(--ok);color:var(--ok);}
-.pitch-panel{position:fixed;bottom:74px;right:20px;z-index:50;width:210px;background:var(--surf);border:1px solid var(--brd);display:none;flex-direction:column;}
+.pitch-panel{position:fixed;bottom:20px;right:20px;z-index:50;width:210px;background:var(--surf);border:1px solid var(--brd);display:none;flex-direction:column;}
 .pitch-panel.open{display:flex;}
 .pitch-ph{padding:8px 13px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;}
 .pitch-ph span{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
@@ -249,11 +246,12 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v5 · 2026-04-27 23:52</div>
+<div class="ver-bar">v5 · 2026-04-28 00:05</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
   <span class="sync-st" id="sync-status">— не настроено</span>
+  <button class="sync-btn" onclick="togglePitchPanel()">Pitch</button>
   <button class="sync-btn" onclick="openSetup()">⚙ Gist Sync</button>
 </div>
 
@@ -380,7 +378,6 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
     <button class="pitch-mic" id="pitchMicBtn" onclick="toggleMic()">&#9836; Микрофон</button>
   </div>
 </div>
-<button class="pitch-fab" id="pitchFab" onclick="togglePitchPanel()" title="Pitch Detector">&#9836;</button>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -902,13 +899,10 @@ const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 let _pStream=null, _pCtx=null, _pAn=null, _pRaf=null, _micOn=false;
 
 function togglePitchPanel() {
-  const p=document.getElementById('pitchPanel'), f=document.getElementById('pitchFab');
-  p.classList.toggle('open');
-  f.classList.toggle('active', p.classList.contains('open'));
+  document.getElementById('pitchPanel').classList.toggle('open');
 }
 function closePitch() {
   document.getElementById('pitchPanel').classList.remove('open');
-  document.getElementById('pitchFab').classList.remove('active');
 }
 
 function freqToNote(freq) {
