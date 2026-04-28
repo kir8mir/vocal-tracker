@@ -286,14 +286,22 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 .wu-tbtn:hover:not(.go){border-color:var(--muted);color:var(--txt);}
 .wu-sect{padding:12px 16px;}
 .wu-ex-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
-.wu-ex{padding:10px 14px;border:1px solid var(--brd);background:var(--surf);cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
+.wu-ex{border:1px solid var(--brd);background:var(--surf);transition:border-color .15s;}
 .wu-ex:hover{border-color:var(--muted);}
 .wu-ex.sel{border-color:var(--ok);background:var(--s2);}
+.wu-ex-main{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;}
 .wu-ex-info{flex:1;min-width:0;}
 .wu-ex-name{font-weight:600;font-size:13px;}
 .wu-ex-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.wu-ex-del{background:none;border:none;color:#383840;cursor:pointer;font-size:12px;padding:2px 5px;flex-shrink:0;}
-.wu-ex-del:hover{color:var(--acc);}
+.wu-ex-btns{display:flex;gap:3px;flex-shrink:0;}
+.wu-ex-btn{background:none;border:1px solid var(--brd);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;cursor:pointer;line-height:1.5;}
+.wu-ex-btn:hover{border-color:var(--acc);color:var(--acc);}
+.wu-ex-btn.del:hover{border-color:var(--warn);color:var(--warn);}
+.wu-edited-dot{font-size:9px;color:var(--warn);margin-left:4px;vertical-align:middle;}
+.wu-ex-edit-form{padding:10px 12px 12px;background:var(--bg);border-top:1px solid var(--brd);display:flex;flex-direction:column;gap:5px;}
+.wu-ex-edit-form input{background:var(--surf);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;width:100%;box-sizing:border-box;}
+.wu-ex-edit-form input:focus{outline:none;border-color:var(--acc);}
+.wu-ex-edit-btns{display:flex;gap:8px;margin-top:4px;}
 .wu-add-form{border:1px solid var(--brd);background:var(--surf);margin-top:8px;}
 .wu-add-head{padding:9px 13px;border-bottom:1px solid var(--brd);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
 .wu-add-bd{padding:12px 13px;display:flex;flex-direction:column;gap:7px;}
@@ -359,7 +367,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v13 · 2026-04-28 15:30</div>
+<div class="ver-bar">v14 · 2026-04-28 16:00</div>
 
 <!-- WARM UP ROOM -->
 <div class="wu-room" id="wuRoom">
@@ -1308,14 +1316,20 @@ function restoreTimers() {
 // WARM UP ROOM
 // ═══════════════════════════════════════════════════════════
 const BUILT_IN_WARMUPS = [
-  {id:'bw1',name:'5-тонная гамма',      syllable:'ма',          pattern:[0,2,4,5,7,5,4,2,0],   defaultBpm:72,  startNote:48,endNote:65,step:1},
-  {id:'bw2',name:'Трезвучие 1-3-5-8',   syllable:'ми',          pattern:[0,4,7,12,7,4,0],       defaultBpm:72,  startNote:48,endNote:65,step:1},
-  {id:'bw3',name:'Гамма вверх (8 нот)', syllable:'йа',          pattern:[0,2,4,5,7,9,11,12],    defaultBpm:100, startNote:48,endNote:64,step:1},
-  {id:'bw4',name:'Нисх. пентатоника',   syllable:'но',          pattern:[7,5,4,2,0],            defaultBpm:80,  startNote:55,endNote:67,step:1},
-  {id:'bw5',name:'Квинтовый скачок',    syllable:'а',           pattern:[0,7,0],                defaultBpm:60,  startNote:48,endNote:65,step:1},
-  {id:'bw6',name:'Октавный скачок',     syllable:'йа',          pattern:[0,12,0],               defaultBpm:54,  startNote:46,endNote:60,step:1},
-  {id:'bw7',name:'Слоговая гамма',      syllable:'ма-ме-ми-мо-му',pattern:[0,2,4,5,7,5,4,2,0], defaultBpm:80,  startNote:48,endNote:64,step:1},
-  {id:'bw8',name:'Трезвучие вниз',      syllable:'vu',          pattern:[12,7,4,0],             defaultBpm:66,  startNote:52,endNote:67,step:1},
+  {id:'bw9', name:'Lip Trill',           syllable:'бр',             pattern:[0,2,4,5,7,5,4,2,0],      defaultBpm:60,  startNote:48,endNote:65,step:1},
+  {id:'bw10',name:'Сирена Ng',           syllable:'нг',             pattern:[0,2,4,6,8,10,12,10,8,6,4,2,0],defaultBpm:40,startNote:48,endNote:60,step:1},
+  {id:'bw13',name:'Hum (мычание)',        syllable:'мм',             pattern:[0,2,4,2,0],               defaultBpm:60,  startNote:48,endNote:65,step:1},
+  {id:'bw1', name:'5-тонная гамма',      syllable:'ма',             pattern:[0,2,4,5,7,5,4,2,0],       defaultBpm:72,  startNote:48,endNote:65,step:1},
+  {id:'bw7', name:'Слоговая гамма',      syllable:'ма-ме-ми-мо-му', pattern:[0,2,4,5,7,5,4,2,0],       defaultBpm:80,  startNote:48,endNote:64,step:1},
+  {id:'bw11',name:'Nay (bratty twang)', syllable:'nay',             pattern:[0,2,4,5,7,5,4,2,0],       defaultBpm:72,  startNote:48,endNote:65,step:1},
+  {id:'bw12',name:'Mum (компрессия)',    syllable:'mum',             pattern:[0,4,7,4,0],                defaultBpm:60,  startNote:48,endNote:65,step:1},
+  {id:'bw2', name:'Трезвучие 1-3-5-8',  syllable:'ми',             pattern:[0,4,7,12,7,4,0],           defaultBpm:72,  startNote:48,endNote:65,step:1},
+  {id:'bw3', name:'Гамма вверх (8 нот)',syllable:'йа',              pattern:[0,2,4,5,7,9,11,12],        defaultBpm:100, startNote:48,endNote:64,step:1},
+  {id:'bw4', name:'Нисх. пентатоника',  syllable:'но',             pattern:[7,5,4,2,0],                defaultBpm:80,  startNote:55,endNote:67,step:1},
+  {id:'bw5', name:'Квинтовый скачок',   syllable:'а',              pattern:[0,7,0],                    defaultBpm:60,  startNote:48,endNote:65,step:1},
+  {id:'bw6', name:'Октавный скачок',    syllable:'йа',             pattern:[0,12,0],                   defaultBpm:54,  startNote:46,endNote:60,step:1},
+  {id:'bw8', name:'Трезвучие вниз',     syllable:'vu',             pattern:[12,7,4,0],                 defaultBpm:66,  startNote:52,endNote:67,step:1},
+  {id:'bw14',name:'Wee (головной)',     syllable:'wee',             pattern:[0,7,12,7,0],               defaultBpm:60,  startNote:48,endNote:65,step:1},
 ];
 
 const WU_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -1323,7 +1337,26 @@ function wuMidiName(m){ return WU_NOTE_NAMES[m%12]+(Math.floor(m/12)-1); }
 
 function getCustomWarmups()    { return S['custom-warmups']||[]; }
 function setCustomWarmups(arr) { S['custom-warmups']=arr; save(); }
-function getAllWarmups()        { return [...BUILT_IN_WARMUPS,...getCustomWarmups()]; }
+
+function getWuOrder()        { return S['wu-order']||null; }
+function setWuOrder(arr)     { S['wu-order']=arr; save(); }
+function getWuEdits()        { return S['wu-edits']||{}; }
+function setWuEdit(id,fields){ const e=getWuEdits(); e[id]=Object.assign(e[id]||{},fields); S['wu-edits']=e; save(); }
+function resetWuEdit(id)     { const e=getWuEdits(); delete e[id]; S['wu-edits']=e; save(); }
+
+function getAllWarmups() {
+  const base=[...BUILT_IN_WARMUPS,...getCustomWarmups()];
+  const edits=getWuEdits();
+  const stored=getWuOrder();
+  let ordered;
+  if(stored){
+    ordered=stored.map(id=>base.find(w=>w.id===id)).filter(Boolean);
+    const inOrd=new Set(ordered.map(w=>w.id));
+    base.filter(w=>!inOrd.has(w.id)).forEach(w=>ordered.push(w));
+  } else { ordered=base; }
+  return ordered.map(w=>edits[w.id]?Object.assign({},w,edits[w.id]):w);
+}
+function wuCurrentOrder(){ return getAllWarmups().map(w=>w.id); }
 
 let wuSt = {
   running:false, selectedId:'bw1', currentRoot:48,
@@ -1474,20 +1507,46 @@ function renderWuControls(){
 }
 
 // ── Exercise list ──────────────────────────────────────────
+let wuEditingId=null;
+
 function renderWuExList(){
   const el=document.getElementById('wuExList'); if(!el) return;
-  el.innerHTML=getAllWarmups().map(wu=>{
+  const all=getAllWarmups(); const edits=getWuEdits();
+  el.innerHTML=all.map((wu,idx)=>{
     const isCust=!wu.id.startsWith('bw');
+    const isEdited=!isCust&&!!edits[wu.id];
     const isSel=wu.id===wuSt.selectedId;
-    return `<div class="wu-ex${isSel?' sel':''}" onclick="selectWu('${wu.id}')">
-      <div class="wu-ex-info">
-        <div class="wu-ex-name">${wu.name}</div>
-        <div class="wu-ex-sub">слог: ${wu.syllable} &nbsp;·&nbsp; паттерн: ${wu.pattern.join(', ')} &nbsp;·&nbsp; ${wu.defaultBpm||wu.bpm||72} BPM</div>
+    const isEd=wuEditingId===wu.id;
+    const bpm=wu.defaultBpm||wu.bpm||72;
+    const editForm=isEd?`<div class="wu-ex-edit-form">
+      <input id="wuEN-${wu.id}" value="${wu.name.replace(/"/g,'&quot;')}" placeholder="Название">
+      <input id="wuES-${wu.id}" value="${wu.syllable}" placeholder="Слоги через дефис">
+      <input id="wuEP-${wu.id}" value="${wu.pattern.join(',')}" placeholder="Паттерн (интервалы)">
+      <input id="wuEB-${wu.id}" type="number" value="${bpm}" placeholder="BPM" min="20" max="220">
+      <div class="wu-ex-edit-btns">
+        <button class="btn-ok" onclick="wuSaveEdit('${wu.id}')">Сохранить</button>
+        <button class="btn-no" onclick="wuEditingId=null;renderWuExList()">Отмена</button>
+        ${isEdited?`<button class="btn-no" onclick="wuResetEx('${wu.id}')" style="margin-left:auto">↺ Сброс</button>`:''}
       </div>
-      ${isCust?`<button class="wu-ex-del" onclick="event.stopPropagation();delCustomWarmup('${wu.id}')">&#10005;</button>`:''}
+    </div>`:'';
+    return `<div class="wu-ex${isSel?' sel':''}" id="wu-ex-${wu.id}">
+      <div class="wu-ex-main" onclick="selectWu('${wu.id}')">
+        <div class="wu-ex-info">
+          <div class="wu-ex-name">${wu.name}${isEdited?'<span class="wu-edited-dot">✎</span>':''}</div>
+          <div class="wu-ex-sub">слог: ${wu.syllable} &nbsp;·&nbsp; ${wu.pattern.join(',')} &nbsp;·&nbsp; ${bpm} BPM</div>
+        </div>
+      </div>
+      <div class="wu-ex-btns" style="padding:0 8px 0 0">
+        <button class="wu-ex-btn" onclick="wuMoveUp('${wu.id}')" title="Вверх" ${idx===0?'disabled':''}>↑</button>
+        <button class="wu-ex-btn" onclick="wuMoveDown('${wu.id}')" title="Вниз" ${idx===all.length-1?'disabled':''}>↓</button>
+        <button class="wu-ex-btn" onclick="wuEditEx('${wu.id}')" title="Редактировать">✎</button>
+        ${isCust?`<button class="wu-ex-btn del" onclick="delCustomWarmup('${wu.id}')" title="Удалить">✕</button>`:''}
+      </div>
+      ${editForm}
     </div>`;
   }).join('');
 }
+
 function selectWu(id){
   stopWuPlayback();
   wuSt.selectedId=id;
@@ -1495,6 +1554,41 @@ function selectWu(id){
   if(wu){ wuSt.bpm=wu.defaultBpm||wu.bpm||72; wuSt.startNote=wu.startNote||48; wuSt.endNote=wu.endNote||65; wuSt.step=wu.step||1; wuSt.currentRoot=wuSt.startNote; }
   renderWuControls(); renderWuExList();
 }
+function wuMoveUp(id){
+  const ord=wuCurrentOrder(); const i=ord.indexOf(id); if(i<=0) return;
+  [ord[i-1],ord[i]]=[ord[i],ord[i-1]]; setWuOrder(ord); renderWuExList();
+}
+function wuMoveDown(id){
+  const ord=wuCurrentOrder(); const i=ord.indexOf(id); if(i<0||i>=ord.length-1) return;
+  [ord[i],ord[i+1]]=[ord[i+1],ord[i]]; setWuOrder(ord); renderWuExList();
+}
+function wuEditEx(id){
+  wuEditingId=wuEditingId===id?null:id; renderWuExList();
+  if(wuEditingId){
+    requestAnimationFrame(()=>{
+      const el=document.getElementById('wu-ex-'+id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    });
+  }
+}
+function wuSaveEdit(id){
+  const n=document.getElementById('wuEN-'+id).value.trim(); if(!n) return;
+  const s=document.getElementById('wuES-'+id).value.trim()||'а';
+  const patRaw=document.getElementById('wuEP-'+id).value.trim();
+  const bpm=parseInt(document.getElementById('wuEB-'+id).value)||72;
+  const pat=patRaw.split(',').map(x=>parseInt(x.trim())).filter(x=>!isNaN(x));
+  if(!pat.length){alert('Введи паттерн'); return;}
+  const isCust=!id.startsWith('bw');
+  if(isCust){
+    setCustomWarmups(getCustomWarmups().map(w=>w.id===id?{...w,name:n,syllable:s,pattern:pat,defaultBpm:bpm}:w));
+  } else {
+    setWuEdit(id,{name:n,syllable:s,pattern:pat,defaultBpm:bpm});
+  }
+  wuEditingId=null;
+  if(wuSt.selectedId===id) wuSt.bpm=bpm;
+  renderWuExList(); renderWuControls();
+}
+function wuResetEx(id){ resetWuEdit(id); wuEditingId=null; renderWuExList(); renderWuControls(); }
 
 // ── Playback ───────────────────────────────────────────────
 function toggleWuPlayback(){
@@ -1576,16 +1670,19 @@ function addCustomWarmup(){
   const bpm=parseInt(document.getElementById('wuFBpm').value)||72;
   const pat=patRaw.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
   if(!pat.length){alert('Введи паттерн нотами-интервалами');return;}
+  const newId='cw_'+Date.now();
   const arr=getCustomWarmups();
-  arr.push({id:'cw_'+Date.now(),name,syllable:syl,pattern:pat,defaultBpm:bpm,startNote:wuSt.startNote,endNote:wuSt.endNote,step:1});
+  arr.push({id:newId,name,syllable:syl,pattern:pat,defaultBpm:bpm,startNote:wuSt.startNote,endNote:wuSt.endNote,step:1});
   setCustomWarmups(arr);
+  const ord=wuCurrentOrder(); ord.push(newId); setWuOrder(ord);
   ['wuFName','wuFSyl','wuFPat'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('wuAddForm').style.display='none';
   renderWuExList();
 }
 function delCustomWarmup(id){
   setCustomWarmups(getCustomWarmups().filter(w=>w.id!==id));
-  if(wuSt.selectedId===id) wuSt.selectedId='bw1';
+  const ord=getWuOrder(); if(ord) setWuOrder(ord.filter(x=>x!==id));
+  if(wuSt.selectedId===id) wuSt.selectedId='bw9';
   renderWuExList();
 }
 
