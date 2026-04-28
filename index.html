@@ -247,16 +247,24 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 .wu-nav-back{background:none;border:1px solid var(--brd);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.09em;padding:5px 12px;cursor:pointer;white-space:nowrap;}
 .wu-nav-back:hover{border-color:var(--acc);color:var(--acc);}
 .wu-nav h2{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em;text-transform:uppercase;}
-.wu-piano-wrap{padding:0;background:var(--surf);border-bottom:1px solid var(--brd);flex-shrink:0;}
-.wu-piano{display:flex;position:relative;height:120px;width:100%;}
-.wu-oct{position:relative;display:flex;flex:1;}
-.wu-wk{flex:1;height:115px;background:#d8d8d0;border:1px solid #666;cursor:pointer;position:relative;z-index:1;transition:background .07s;}
+.wu-piano-wrap{overflow-x:scroll;scrollbar-width:none;padding:0;background:var(--surf);flex-shrink:0;}
+.wu-piano-wrap::-webkit-scrollbar{display:none;}
+.wu-piano{display:flex;height:120px;width:max-content;}
+.wu-oct{position:relative;display:flex;flex-shrink:0;}
+.wu-wk{width:38px;height:115px;background:#d8d8d0;border:1px solid #666;cursor:pointer;position:relative;z-index:1;transition:background .07s;}
 .wu-wk:hover{background:#bbb;}
 .wu-wk.lit{background:var(--acc)!important;border-color:var(--acc);}
 .wu-bk{width:8.6%;height:70px;background:#1e1e1e;position:absolute;top:0;z-index:2;cursor:pointer;border:1px solid #555;transition:background .07s;}
 .wu-bk:hover{background:#444;}
 .wu-bk.lit{background:var(--acc)!important;}
 .wu-octlbl{position:absolute;bottom:3px;left:2px;font-family:'JetBrains Mono',monospace;font-size:7px;color:#888;pointer-events:none;}
+.wu-oct-scroll{padding:8px 16px 6px;background:var(--surf);border-bottom:1px solid var(--brd);flex-shrink:0;}
+.wu-oct-scroll input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--brd);outline:none;cursor:pointer;border-radius:2px;}
+.wu-oct-scroll input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--acc);cursor:pointer;transition:transform .1s;}
+.wu-oct-scroll input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);}
+.wu-oct-scroll input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--acc);cursor:pointer;border:none;}
+.wu-oct-scroll input[type=range]::-moz-range-track{background:var(--brd);height:3px;border-radius:2px;}
+.wu-chk-lbl{display:flex;align-items:center;gap:6px;cursor:pointer;}
 .wu-display{display:flex;align-items:center;justify-content:center;gap:28px;padding:16px;border-bottom:1px solid var(--brd);flex-wrap:wrap;}
 .wu-cur-note{font-family:'Anton',sans-serif;font-size:46px;letter-spacing:.02em;color:var(--muted);min-width:58px;text-align:center;transition:color .1s;}
 .wu-cur-note.on{color:var(--acc);}
@@ -351,7 +359,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v11 · 2026-04-28 14:20</div>
+<div class="ver-bar">v12 · 2026-04-28 15:10</div>
 
 <!-- WARM UP ROOM -->
 <div class="wu-room" id="wuRoom">
@@ -359,7 +367,8 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
     <button class="wu-nav-back" onclick="closeWarmup()">&#8592; Назад</button>
     <h2>Warm Up Room</h2>
   </div>
-  <div class="wu-piano-wrap"><div class="wu-piano" id="wuPiano"></div></div>
+  <div class="wu-piano-wrap" id="wuPianoWrap" onwheel="wuPianoWheel(event)"><div class="wu-piano" id="wuPiano"></div></div>
+  <div class="wu-oct-scroll"><input type="range" id="wuOctSlider" min="0" value="0" oninput="wuSlide(this.value)"></div>
   <div class="wu-display">
     <div><div class="lbl" style="text-align:center;margin-bottom:4px">Нота</div><div class="wu-cur-note" id="wuCurNote">—</div></div>
     <div><div class="lbl" style="text-align:center;margin-bottom:4px">Слог</div><div class="wu-syllable-disp" id="wuSylDisp">•</div></div>
@@ -1319,7 +1328,7 @@ function getAllWarmups()        { return [...BUILT_IN_WARMUPS,...getCustomWarmup
 let wuSt = {
   running:false, selectedId:'bw1', currentRoot:48,
   noteIdx:0, timeout:null, bpm:72, startNote:48, endNote:65, step:1,
-  pauseSec:0, repeatFirst:false
+  pauseBetween:false, repeatFirst:false
 };
 
 let _wuCtx = null;
@@ -1355,10 +1364,11 @@ function openWarmup() {
 function closeWarmup() { stopWuPlayback(); document.getElementById('wuRoom').classList.remove('open'); }
 
 // ── Piano ─────────────────────────────────────────────────
+const WU_KEY_W=38, WU_OCT_W=WU_KEY_W*7;
 function renderWuPiano(hlMidi) {
   const el=document.getElementById('wuPiano'); if(!el) return;
   let html='';
-  for (let oct=2;oct<=4;oct++) {
+  for (let oct=1;oct<=5;oct++) {
     const base=(oct+1)*12;
     html+=`<div class="wu-oct">`;
     [0,2,4,5,7,9,11].forEach(s=>{
@@ -1374,11 +1384,36 @@ function renderWuPiano(hlMidi) {
     html+=`</div>`;
   }
   el.innerHTML=html;
-  if (hlMidi!=null) {
-    const oct=Math.floor(hlMidi/12)-2;
-    const wrap=el.closest('.wu-piano-wrap');
-    if(wrap) wrap.scrollLeft=Math.max(0,oct*196-60);
+  const wrap=document.getElementById('wuPianoWrap');
+  if(hlMidi!=null && wrap){
+    const pianoOctIdx=Math.floor(hlMidi/12)-2;
+    const target=Math.max(0,pianoOctIdx*WU_OCT_W-Math.floor(wrap.clientWidth/2)+WU_OCT_W/2);
+    wrap.scrollLeft=target;
+    const sl=document.getElementById('wuOctSlider');
+    if(sl) sl.value=target;
   }
+  initWuSlider();
+}
+function initWuSlider(){
+  const wrap=document.getElementById('wuPianoWrap');
+  const sl=document.getElementById('wuOctSlider');
+  if(!wrap||!sl) return;
+  requestAnimationFrame(()=>{
+    const max=Math.max(0,wrap.scrollWidth-wrap.clientWidth);
+    sl.max=max; if(+sl.value>max) sl.value=max;
+  });
+}
+function wuSlide(val){
+  const wrap=document.getElementById('wuPianoWrap');
+  if(wrap) wrap.scrollLeft=+val;
+}
+function wuPianoWheel(e){
+  e.preventDefault();
+  const wrap=document.getElementById('wuPianoWrap');
+  if(!wrap) return;
+  wrap.scrollLeft+=e.deltaY||e.deltaX;
+  const sl=document.getElementById('wuOctSlider');
+  if(sl) sl.value=wrap.scrollLeft;
 }
 function wuKeyClick(midi) {
   const dur=60/wuSt.bpm;
@@ -1421,19 +1456,14 @@ function renderWuControls(){
         <option value="2"${wuSt.step===2?' selected':''}>1 тон (целый тон)</option>
       </select>
     </div>
-    <div class="wu-ctrl"><div class="lbl">Пауза между сеq</div>
-      <select onchange="wuSt.pauseSec=+this.value">
-        <option value="0"${wuSt.pauseSec===0?' selected':''}>Нет</option>
-        <option value="0.5"${wuSt.pauseSec===0.5?' selected':''}>0.5 с</option>
-        <option value="1"${wuSt.pauseSec===1?' selected':''}>1 с</option>
-        <option value="2"${wuSt.pauseSec===2?' selected':''}>2 с</option>
-        <option value="3"${wuSt.pauseSec===3?' selected':''}>3 с</option>
-      </select>
-    </div>
-    <div class="wu-ctrl" style="justify-content:flex-end">
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-top:16px">
-        <input type="checkbox" ${wuSt.repeatFirst?'checked':''} onchange="wuSt.repeatFirst=this.checked" style="accent-color:var(--acc);width:14px;height:14px;cursor:pointer">
-        <span class="lbl" style="margin:0;white-space:nowrap">Повтор первой ноты</span>
+    <div class="wu-ctrl" style="flex-direction:row;gap:20px;align-items:center;padding-top:14px">
+      <label class="wu-chk-lbl">
+        <input type="checkbox" ${wuSt.pauseBetween?'checked':''} onchange="wuSt.pauseBetween=this.checked" style="accent-color:var(--acc);width:13px;height:13px;cursor:pointer">
+        <span class="lbl" style="margin:0">Пауза между</span>
+      </label>
+      <label class="wu-chk-lbl">
+        <input type="checkbox" ${wuSt.repeatFirst?'checked':''} onchange="wuSt.repeatFirst=this.checked" style="accent-color:var(--acc);width:13px;height:13px;cursor:pointer">
+        <span class="lbl" style="margin:0">Повтор 1-й ноты</span>
       </label>
     </div>
     <div class="wu-transport">
@@ -1515,7 +1545,7 @@ function wuTick(wu){
       },beatSec*1200);
       return;
     }
-    const gapMs=(beatSec+wuSt.pauseSec)*1000;
+    const extraMs=wuSt.pauseBetween?beatSec*500:0;
     if(wuSt.repeatFirst){
       wuSt.timeout=setTimeout(()=>{
         if(!wuSt.running) return;
@@ -1523,10 +1553,10 @@ function wuTick(wu){
         playWuNote(fm,beatSec*0.88); renderWuPiano(fm);
         const rn=document.getElementById('wuCurNote');
         if(rn){rn.textContent=wuMidiName(fm);rn.className='wu-cur-note on';}
-        wuSt.timeout=setTimeout(()=>wuTick(wu),beatSec*1000);
-      },gapMs);
+        wuSt.timeout=setTimeout(()=>wuTick(wu),beatSec*1000+extraMs);
+      },beatSec*1000+extraMs);
     } else {
-      wuSt.timeout=setTimeout(()=>wuTick(wu),gapMs);
+      wuSt.timeout=setTimeout(()=>wuTick(wu),beatSec*1000+extraMs);
     }
     return;
   }
