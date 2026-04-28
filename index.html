@@ -359,7 +359,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v12 · 2026-04-28 15:10</div>
+<div class="ver-bar">v13 · 2026-04-28 15:30</div>
 
 <!-- WARM UP ROOM -->
 <div class="wu-room" id="wuRoom">
@@ -1447,8 +1447,9 @@ function renderWuControls(){
     <div class="wu-ctrl"><div class="lbl">Старт (тоника)</div>
       <select onchange="wuSt.startNote=+this.value;wuSt.currentRoot=+this.value">${buildNoteOpts(wuSt.startNote)}</select>
     </div>
-    <div class="wu-ctrl"><div class="lbl">Верхняя нота</div>
-      <select onchange="wuSt.endNote=+this.value">${buildNoteOpts(wuSt.endNote)}</select>
+    <div class="wu-ctrl"><div class="lbl">Верх. тоника</div>
+      <select onchange="wuSt.endNote=+this.value;renderWuControls()">${buildNoteOpts(wuSt.endNote)}</select>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px">макс. нота: <b style="color:var(--txt)">${wuMidiName(wuSt.endNote+Math.max(...(getAllWarmups().find(w=>w.id===wuSt.selectedId)||{pattern:[0]}).pattern))}</b> — тоника уходит выше по паттерну</div>
     </div>
     <div class="wu-ctrl"><div class="lbl">Шаг транспозиции</div>
       <select onchange="wuSt.step=+this.value">
