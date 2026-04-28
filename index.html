@@ -74,6 +74,8 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .task{border-left:2px solid var(--brd);padding:0 0 0 8px;}
 .task.theory{border-left-color:var(--blue);}
 .task.practice{border-left-color:var(--acc);}
+.task.practice.ear-task{border-left-color:var(--blue);}
+.task.practice.ear-task .ttype{color:var(--blue);}
 .task.test-t{border-left-color:var(--ok);}
 .task.custom{border-left-color:var(--purple);}
 .task.done-task{opacity:.38;}
@@ -288,7 +290,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v9 · 2026-04-28 01:35</div>
+<div class="ver-bar">v9 · 2026-04-28 01:42</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -756,7 +758,8 @@ function renderWeek(wn) {
           <span id="tdisp-${t.id}" class="timer-disp">${m}:00</span>
         </div>`;
       }
-      return `<div class="task ${t.type}${done?' done-task':''}" id="tk-${t.id}">
+      const earCls = t.trainingType==='ear' ? ' ear-task' : '';
+      return `<div class="task ${t.type}${earCls}${done?' done-task':''}" id="tk-${t.id}">
         <div class="task-row">
           <input type="checkbox" class="tcb" ${done?'checked':''} onchange="toggleTask(${wn},'${t.id}',this.checked)">
           <div class="tcontent">
