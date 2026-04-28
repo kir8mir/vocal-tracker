@@ -79,6 +79,14 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .task.practice .ttype{color:var(--acc);}
 .task.test-t .ttype{color:var(--ok);}
 .task.custom .ttype{color:var(--purple);}
+.task-timer{display:flex;align-items:center;gap:5px;margin:3px 0 2px 18px;}
+.timer-play{background:none;border:1px solid var(--brd);color:var(--muted);font-size:9px;line-height:1;padding:2px 8px;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;transition:border-color .12s,color .12s;}
+.timer-play:hover,.timer-play.running{border-color:var(--ok);color:var(--ok);}
+.timer-disp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+.timer-disp.running{color:var(--ok);}
+.timer-tracked{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ok);text-transform:uppercase;letter-spacing:.08em;}
+.day.today>.dhead{background:#1e1818!important;border-top:2px solid var(--acc);}
+.day.today .dname{color:var(--acc);}
 .tlbl{display:block;font-size:11px;font-weight:500;line-height:1.3;margin-bottom:1px;color:var(--txt);}
 .tlbl:hover{color:var(--acc);}
 .task.done-task .tlbl{text-decoration:line-through;}
@@ -252,7 +260,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v7 · 2026-04-28 00:35</div>
+<div class="ver-bar">v8 · 2026-04-28 01:10</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -401,15 +409,15 @@ const BUILT_IN_WEEKS = [
         {id:'w1d0t2',type:'theory',label:'VLTTW Ep.99 — Beginners Part 2',url:'https://www.youtube.com/watch?v=9427xS0X1dM',meta:'~16 мин · смотреть подряд'},
       ],
       2:[
-        {id:'w1d2p1',type:'practice',label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'~15 мин · повторять за тренером'},
-        {id:'w1d2e1',type:'practice',label:'SingAndScream — Component 1: Twang (шаг 1)',url:'https://singandscream.com/how-to-fry-scream/',meta:'10 мин · читай гайд, пробуй Twang'},
+        {id:'w1d2p1',type:'practice',trainingType:'voice',duration:15,label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'повторять за тренером'},
+        {id:'w1d2e1',type:'practice',trainingType:'voice',duration:10,label:'SingAndScream — Component 1: Twang (шаг 1)',url:'https://singandscream.com/how-to-fry-scream/',meta:'читай гайд, пробуй Twang'},
       ],
       4:[
-        {id:'w1d4p1',type:'practice',label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'~15 мин · повторять'},
-        {id:'w1d4e2',type:'practice',label:'SingAndScream — Component 1: Twang → Rasp/Buzz',url:'https://singandscream.com/how-to-fry-scream/',meta:'10 мин · пробуй переход'},
+        {id:'w1d4p1',type:'practice',trainingType:'voice',duration:15,label:'Chris Liepe — Foolproof Daily Warmup',url:'https://www.youtube.com/watch?v=pI4CI5-XypQ',meta:'повторять'},
+        {id:'w1d4e2',type:'practice',trainingType:'voice',duration:10,label:'SingAndScream — Component 1: Twang → Rasp/Buzz',url:'https://singandscream.com/how-to-fry-scream/',meta:'пробуй переход'},
       ],
       6:[
-        {id:'w1d6t1',type:'test-t',label:'Запись голоса — Baseline',url:null,meta:'5 мин · сохрани «Неделя_1_baseline»'},
+        {id:'w1d6t1',type:'test-t',duration:5,label:'Запись голоса — Baseline',url:null,meta:'сохрани «Неделя_1_baseline»'},
       ],
     }
   },
@@ -658,6 +666,7 @@ function renderWeek(wn) {
   }
 
   // Days
+  const todayDi = (() => { const d=new Date().getDay(); return d===0?6:d-1; })();
   const daysHtml = Array.from({length:7}, (_,di) => {
     const builtTasks = w.days[di] || [];
     const customTasks = getCustomTasks(wn, di);
@@ -665,15 +674,36 @@ function renderWeek(wn) {
     const isFormOpen = openForm && openForm.wn===wn && openForm.di===di;
     const hasTasks = allTasks.length > 0;
     const isSunday = di === 6;
+    const isToday  = di === todayDi;
+    const hasVoice = allTasks.some(t => t.type==='practice' && t.trainingType!=='ear');
+    const hasEar   = allTasks.some(t => t.trainingType==='ear');
     const type   = isSunday ? 'test' : hasTasks ? 'train' : 'rest';
-    const dlabel = isSunday ? 'Тест' : hasTasks ? 'Тренировка' : 'Отдых';
+    const dlabel = isSunday ? 'Тест'
+      : (hasVoice && hasEar) ? 'Голос + Слух'
+      : hasEar   ? 'Тренировка Слуха'
+      : hasVoice ? 'Тренировка Голоса'
+      : hasTasks ? 'Тренировка'
+      : 'Отдых';
     const isEmpty = !hasTasks && !isSunday;
     const isExpanded = hasTasks || isSunday;
 
     const tasksHtml = allTasks.map(t => {
       const done = isDone(t.id);
       const isCustom = !!t.custom;
-      const typeLabel = {theory:'Теория',practice:'Практика','test-t':'Тест',custom:'Custom'}[t.type]||'';
+      const baseLabel = {theory:'Теория',practice:'Практика','test-t':'Тест',custom:'Custom'}[t.type]||'';
+      const catSuffix = t.trainingType==='voice' ? ' · ГОЛОС' : t.trainingType==='ear' ? ' · СЛУХ' : '';
+      const typeLabel = baseLabel + catSuffix;
+      const tracked = S['time:'+t.id];
+      let timerHtml = '';
+      if (done && (tracked || t.duration)) {
+        timerHtml = `<div class="task-timer"><span class="timer-tracked">&#10003; ${tracked||t.duration}&nbsp;мин</span></div>`;
+      } else if (t.duration && !done) {
+        const m=Math.floor(t.duration), s=0;
+        timerHtml = `<div class="task-timer" id="timer-${t.id}">
+          <button id="tbtn-${t.id}" class="timer-play" onclick="toggleTimer('${t.id}',${t.duration*60})">&#9654;</button>
+          <span id="tdisp-${t.id}" class="timer-disp">${m}:00</span>
+        </div>`;
+      }
       return `<div class="task ${t.type}${done?' done-task':''}" id="tk-${t.id}">
         <div class="task-row">
           <input type="checkbox" class="tcb" ${done?'checked':''} onchange="toggleTask(${wn},'${t.id}',this.checked)">
@@ -684,23 +714,36 @@ function renderWeek(wn) {
               : `<span class="tlbl">${t.label}</span>`}
             ${t.meta?`<div class="tmeta">${t.meta}</div>`:''}
           </div>
-          ${isCustom?`<button class="tdel" onclick="delTask(${wn},${di},'${t.id}')">✕</button>`:''}
+          ${isCustom?`<button class="tdel" onclick="delTask(${wn},${di},'${t.id}')">&#10005;</button>`:''}
         </div>
+        ${timerHtml}
       </div>`;
     }).join('');
 
     const formHtml = `<div class="tform${isFormOpen?' open':''}" id="tf-${wn}-${di}">
-      <select id="fty-${wn}-${di}"><option value="theory">Теория</option><option value="practice" selected>Практика</option><option value="test-t">Тест</option><option value="custom">Custom</option></select>
+      <select id="fty-${wn}-${di}" onchange="onTypeChange(this.value,${wn},${di})">
+        <option value="theory">Теория</option><option value="practice" selected>Практика</option>
+        <option value="test-t">Тест</option><option value="custom">Custom</option>
+      </select>
+      <div id="fcat-wrap-${wn}-${di}">
+        <select id="fcat-${wn}-${di}"><option value="voice">Голос</option><option value="ear">Слух</option></select>
+      </div>
       <input type="text" id="flb-${wn}-${di}" placeholder="Название">
       <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)">
-      <input type="text" id="fme-${wn}-${di}" placeholder="Заметка / время">
+      <select id="fdur-${wn}-${di}">
+        <option value="">без таймера</option><option value="5">5 мин</option>
+        <option value="10">10 мин</option><option value="15">15 мин</option>
+        <option value="20">20 мин</option><option value="30">30 мин</option>
+        <option value="60">60 мин</option><option value="120">120 мин</option>
+      </select>
+      <input type="text" id="fme-${wn}-${di}" placeholder="Заметка (необязательно)">
       <div class="tform-btns">
         <button class="btn-ok" onclick="saveTask(${wn},${di})">Сохранить</button>
         <button class="btn-no" onclick="closeForm()">Отмена</button>
       </div>
     </div>`;
 
-    return `<div class="day ${type}${isEmpty?' empty-day':''}${isExpanded?' expanded':''}" id="day-${wn}-${di}">
+    return `<div class="day ${type}${isEmpty?' empty-day':''}${isExpanded?' expanded':''}${isToday?' today':''}" id="day-${wn}-${di}">
       <div class="dhead" onclick="toggleDay(${wn},${di})">
         <div><div class="dname">${DNAMES[di]}</div><div class="dtype">${dlabel}</div></div>
         <span class="dtoggle">${isExpanded?'−':'+'}</span>
@@ -801,6 +844,7 @@ function renderWeek(wn) {
         </div>
       </div>
     </div>`;
+  restoreTimers();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -818,6 +862,10 @@ function toggleDay(wn, di) {
 
 function toggleTask(wn, id, val) {
   setDone(id, val);
+  if (val && !S['time:'+id]) {
+    const t = findTask(id);
+    if (t && t.duration) { S['time:'+id] = t.duration; save(); }
+  }
   renderTabs();
   renderStreak();
   const el = document.getElementById(`tk-${id}`);
@@ -834,12 +882,16 @@ function closeForm() { openForm=null; renderWeek(activeWeek); }
 function saveTask(wn, di) {
   const label = document.getElementById(`flb-${wn}-${di}`).value.trim();
   if (!label) return;
-  const type = document.getElementById(`fty-${wn}-${di}`).value;
-  const url  = document.getElementById(`fur-${wn}-${di}`).value.trim()||null;
-  const meta = document.getElementById(`fme-${wn}-${di}`).value.trim();
+  const type  = document.getElementById(`fty-${wn}-${di}`).value;
+  const url   = document.getElementById(`fur-${wn}-${di}`).value.trim()||null;
+  const meta  = document.getElementById(`fme-${wn}-${di}`).value.trim();
+  const catEl = document.getElementById(`fcat-${wn}-${di}`);
+  const durEl = document.getElementById(`fdur-${wn}-${di}`);
+  const trainingType = (type==='practice' && catEl) ? catEl.value : null;
+  const duration     = (durEl && durEl.value) ? parseInt(durEl.value) : null;
   const id   = `c_${wn}_${di}_${Date.now()}`;
   const arr  = getCustomTasks(wn, di);
-  arr.push({id, type, label, url, meta, custom:true});
+  arr.push({id, type, label, url, meta, custom:true, trainingType, duration});
   setCustomTasks(wn, di, arr);
   openForm = null;
   renderWeek(wn); renderTabs();
@@ -924,6 +976,77 @@ function addWeek() {
   document.getElementById('awGoal').value  = '';
   document.getElementById('awForm').classList.remove('open');
   renderTabs();
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════
+const timers = {};
+
+function fmtTime(s) {
+  return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+}
+
+function findTask(id) {
+  for (const w of allWeeks()) {
+    for (let di=0;di<7;di++) {
+      const t=[...(w.days[di]||[]),...getCustomTasks(w.num,di)].find(t=>t.id===id);
+      if (t) return t;
+    }
+  }
+  return null;
+}
+
+function onTypeChange(type, wn, di) {
+  const el = document.getElementById('fcat-wrap-'+wn+'-'+di);
+  if (el) el.style.display = type==='practice' ? '' : 'none';
+}
+
+function toggleTimer(taskId, totalSecs) {
+  if (!timers[taskId]) {
+    timers[taskId] = {total:totalSecs, remaining:totalSecs, elapsed:0, running:false, iv:null};
+  }
+  const t = timers[taskId];
+  if (t.running) {
+    clearInterval(t.iv); t.iv=null; t.running=false;
+    const b=document.getElementById('tbtn-'+taskId);
+    if (b) { b.textContent='▶'; b.classList.remove('running'); }
+  } else {
+    t.running=true;
+    const b=document.getElementById('tbtn-'+taskId);
+    if (b) { b.textContent='⏸'; b.classList.add('running'); }
+    const d=document.getElementById('tdisp-'+taskId);
+    if (d) d.classList.add('running');
+    t.iv=setInterval(()=>{
+      t.remaining=Math.max(0,t.remaining-1);
+      t.elapsed++;
+      const disp=document.getElementById('tdisp-'+taskId);
+      if (disp) disp.textContent=fmtTime(t.remaining);
+      if (t.remaining<=0) {
+        clearInterval(t.iv); t.iv=null; t.running=false;
+        const mins=Math.max(1,Math.round(t.elapsed/60));
+        S['time:'+taskId]=mins; setDone(taskId,true); save();
+        renderTabs(); renderStreak();
+        delete timers[taskId];
+        const el=document.getElementById('tk-'+taskId);
+        if (el) {
+          el.classList.add('done-task');
+          const cb=el.querySelector('.tcb'); if(cb) cb.checked=true;
+          const te=document.getElementById('timer-'+taskId);
+          if(te) te.innerHTML=`<span class="timer-tracked">&#10003; ${mins}&nbsp;мин</span>`;
+        }
+      }
+    },1000);
+  }
+}
+
+function restoreTimers() {
+  Object.entries(timers).forEach(([id,t])=>{
+    const d=document.getElementById('tdisp-'+id);
+    const b=document.getElementById('tbtn-'+id);
+    if (d) { d.textContent=fmtTime(t.remaining); if(t.running) d.classList.add('running'); }
+    if (b && t.running) { b.textContent='⏸'; b.classList.add('running'); }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
