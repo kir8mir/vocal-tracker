@@ -236,6 +236,61 @@ details[open] summary::after{content:'−';}
 footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;}
 .ver-bar{font-family:'JetBrains Mono',monospace;font-size:9px;color:#36363d;text-transform:uppercase;letter-spacing:.12em;text-align:right;margin-bottom:6px;}
 
+/* ── WARM UP ROOM ── */
+.wu-room{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;overflow-y:auto;}
+.wu-room.open{display:flex;}
+.wu-nav{display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--brd);flex-shrink:0;position:sticky;top:0;background:var(--bg);z-index:10;}
+.wu-nav-back{background:none;border:1px solid var(--brd);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.09em;padding:5px 12px;cursor:pointer;white-space:nowrap;}
+.wu-nav-back:hover{border-color:var(--acc);color:var(--acc);}
+.wu-nav h2{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em;text-transform:uppercase;}
+.wu-piano-wrap{overflow-x:auto;padding:14px 16px 6px;background:var(--surf);border-bottom:1px solid var(--brd);flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.wu-piano{display:inline-flex;position:relative;height:84px;gap:0;}
+.wu-oct{position:relative;display:flex;flex-shrink:0;}
+.wu-wk{width:28px;height:80px;background:#d8d8d0;border:1px solid #666;cursor:pointer;position:relative;z-index:1;flex-shrink:0;transition:background .07s;}
+.wu-wk:hover{background:#bbb;}
+.wu-wk.lit{background:var(--acc)!important;border-color:var(--acc);}
+.wu-bk{width:17px;height:50px;background:#1e1e1e;position:absolute;top:0;z-index:2;cursor:pointer;border:1px solid #555;transition:background .07s;}
+.wu-bk:hover{background:#444;}
+.wu-bk.lit{background:var(--acc)!important;}
+.wu-octlbl{position:absolute;bottom:3px;left:2px;font-family:'JetBrains Mono',monospace;font-size:7px;color:#888;pointer-events:none;}
+.wu-display{display:flex;align-items:center;justify-content:center;gap:28px;padding:16px;border-bottom:1px solid var(--brd);flex-wrap:wrap;}
+.wu-cur-note{font-family:'Anton',sans-serif;font-size:46px;letter-spacing:.02em;color:var(--muted);min-width:58px;text-align:center;transition:color .1s;}
+.wu-cur-note.on{color:var(--acc);}
+.wu-syllable-disp{font-family:'Anton',sans-serif;font-size:36px;letter-spacing:.06em;color:var(--muted);min-width:80px;text-align:center;transition:color .1s;text-transform:uppercase;}
+.wu-syllable-disp.on{color:var(--ok);}
+.wu-prog-info{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center;min-width:80px;}
+.wu-controls{padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;}
+.wu-ctrl{display:flex;flex-direction:column;gap:3px;}
+.wu-ctrl .lbl{margin-bottom:0;}
+.wu-ctrl select{background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;}
+.wu-ctrl select:focus{outline:none;border-color:var(--acc);}
+.wu-bpm-row{display:flex;align-items:center;gap:8px;}
+.wu-bpm-row input[type=range]{width:100px;}
+.wu-bpm-val{font-family:'Anton',sans-serif;font-size:20px;color:var(--acc);min-width:36px;}
+.wu-transport{display:flex;gap:6px;align-items:center;}
+.wu-tbtn{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:7px 16px;border:1px solid var(--brd);background:var(--s2);color:var(--muted);cursor:pointer;transition:all .15s;}
+.wu-tbtn.go{border-color:var(--ok);color:var(--ok);}
+.wu-tbtn.go:hover{background:var(--ok);color:#000;}
+.wu-tbtn:hover:not(.go){border-color:var(--muted);color:var(--txt);}
+.wu-sect{padding:12px 16px;}
+.wu-ex-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.wu-ex{padding:10px 14px;border:1px solid var(--brd);background:var(--surf);cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
+.wu-ex:hover{border-color:var(--muted);}
+.wu-ex.sel{border-color:var(--ok);background:var(--s2);}
+.wu-ex-info{flex:1;min-width:0;}
+.wu-ex-name{font-weight:600;font-size:13px;}
+.wu-ex-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wu-ex-del{background:none;border:none;color:#383840;cursor:pointer;font-size:12px;padding:2px 5px;flex-shrink:0;}
+.wu-ex-del:hover{color:var(--acc);}
+.wu-add-form{border:1px solid var(--brd);background:var(--surf);margin-top:8px;}
+.wu-add-head{padding:9px 13px;border-bottom:1px solid var(--brd);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.wu-add-bd{padding:12px 13px;display:flex;flex-direction:column;gap:7px;}
+.wu-add-bd input{background:var(--bg);border:1px solid var(--brd);color:var(--txt);font-family:'Outfit',sans-serif;font-size:12px;padding:6px 9px;width:100%;}
+.wu-add-bd input:focus{outline:none;border-color:var(--ok);}
+.wu-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);line-height:1.5;}
+.wu-add-btns{display:flex;gap:7px;}
+.wu-add-btns button{padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;border:none;cursor:pointer;}
+
 /* ── SYNC BAR ── */
 .sync-bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:16px;}
 .sync-st{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
@@ -292,13 +347,50 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v9 · 2026-04-28 01:50</div>
+<div class="ver-bar">v10 · 2026-04-28 02:20</div>
+
+<!-- WARM UP ROOM -->
+<div class="wu-room" id="wuRoom">
+  <div class="wu-nav">
+    <button class="wu-nav-back" onclick="closeWarmup()">&#8592; Назад</button>
+    <h2>Warm Up Room</h2>
+  </div>
+  <div class="wu-piano-wrap"><div class="wu-piano" id="wuPiano"></div></div>
+  <div class="wu-display">
+    <div><div class="lbl" style="text-align:center;margin-bottom:4px">Нота</div><div class="wu-cur-note" id="wuCurNote">—</div></div>
+    <div><div class="lbl" style="text-align:center;margin-bottom:4px">Слог</div><div class="wu-syllable-disp" id="wuSylDisp">•</div></div>
+    <div><div class="lbl" style="text-align:center;margin-bottom:4px">Прогресс</div><div class="wu-prog-info" id="wuProgInfo">—</div></div>
+  </div>
+  <div class="wu-controls" id="wuControls"></div>
+  <div class="wu-sect">
+    <div class="lbl">Упражнения</div>
+    <div class="wu-ex-list" id="wuExList"></div>
+    <button class="add-chk-btn" style="margin-top:8px" onclick="toggleWuAddForm()">+ добавить упражнение</button>
+    <div id="wuAddForm" style="display:none">
+      <div class="wu-add-form">
+        <div class="wu-add-head">Новое упражнение</div>
+        <div class="wu-add-bd">
+          <input id="wuFName" placeholder="Название">
+          <input id="wuFSyl" placeholder="Слоги через дефис (напр. ма-ме-ми-мо-му или просто ма)">
+          <input id="wuFPat" placeholder="Паттерн — интервалы через запятую (напр. 0,2,4,5,7,5,4,2,0)">
+          <div class="wu-hint">Интервалы от тоники: 0=прима · 2=б.секунда · 3=м.терция · 4=б.терция · 5=кварта · 7=квинта · 9=б.секста · 12=октава</div>
+          <input id="wuFBpm" type="number" placeholder="BPM (напр. 72)" min="30" max="200" value="72">
+          <div class="wu-add-btns">
+            <button class="btn-ok" onclick="addCustomWarmup()">Добавить</button>
+            <button class="btn-no" onclick="toggleWuAddForm()">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
   <span class="sync-st" id="sync-status">— не настроено</span>
+  <button class="sync-btn" onclick="openWarmup()">&#9834; Warm Up</button>
   <button class="sync-btn" onclick="togglePitchPanel()">Pitch</button>
-  <button class="sync-btn" onclick="openSetup()">⚙ Gist Sync</button>
+  <button class="sync-btn" onclick="openSetup()">&#9881; Gist Sync</button>
 </div>
 
 <!-- SETUP MODAL -->
@@ -1192,6 +1284,239 @@ function restoreTimers() {
     if (d) { d.textContent=fmtTime(t.remaining); if(t.running) d.classList.add('running'); }
     if (b && t.running) { b.textContent='⏸'; b.classList.add('running'); }
   });
+}
+
+// ═══════════════════════════════════════════════════════════
+// WARM UP ROOM
+// ═══════════════════════════════════════════════════════════
+const BUILT_IN_WARMUPS = [
+  {id:'bw1',name:'5-тонная гамма',      syllable:'ма',          pattern:[0,2,4,5,7,5,4,2,0],   defaultBpm:72,  startNote:48,endNote:65,step:1},
+  {id:'bw2',name:'Трезвучие 1-3-5-8',   syllable:'ми',          pattern:[0,4,7,12,7,4,0],       defaultBpm:72,  startNote:48,endNote:65,step:1},
+  {id:'bw3',name:'Гамма вверх (8 нот)', syllable:'йа',          pattern:[0,2,4,5,7,9,11,12],    defaultBpm:100, startNote:48,endNote:64,step:1},
+  {id:'bw4',name:'Нисх. пентатоника',   syllable:'но',          pattern:[7,5,4,2,0],            defaultBpm:80,  startNote:55,endNote:67,step:1},
+  {id:'bw5',name:'Квинтовый скачок',    syllable:'а',           pattern:[0,7,0],                defaultBpm:60,  startNote:48,endNote:65,step:1},
+  {id:'bw6',name:'Октавный скачок',     syllable:'йа',          pattern:[0,12,0],               defaultBpm:54,  startNote:46,endNote:60,step:1},
+  {id:'bw7',name:'Слоговая гамма',      syllable:'ма-ме-ми-мо-му',pattern:[0,2,4,5,7,5,4,2,0], defaultBpm:80,  startNote:48,endNote:64,step:1},
+  {id:'bw8',name:'Трезвучие вниз',      syllable:'vu',          pattern:[12,7,4,0],             defaultBpm:66,  startNote:52,endNote:67,step:1},
+];
+
+const WU_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function wuMidiName(m){ return WU_NOTE_NAMES[m%12]+(Math.floor(m/12)-1); }
+
+function getCustomWarmups()    { return S['custom-warmups']||[]; }
+function setCustomWarmups(arr) { S['custom-warmups']=arr; save(); }
+function getAllWarmups()        { return [...BUILT_IN_WARMUPS,...getCustomWarmups()]; }
+
+let wuSt = {
+  running:false, selectedId:'bw1', currentRoot:48,
+  noteIdx:0, timeout:null, bpm:72, startNote:48, endNote:65, step:1
+};
+
+let _wuCtx = null;
+function getWuCtx() {
+  if (!_wuCtx) _wuCtx = new(window.AudioContext||window.webkitAudioContext)();
+  return _wuCtx;
+}
+function playWuNote(midi, dur) {
+  try {
+    const ctx=getWuCtx(), freq=440*Math.pow(2,(midi-69)/12), now=ctx.currentTime;
+    const master=ctx.createGain(); master.connect(ctx.destination);
+    [[1,'triangle',0.5],[2,'sine',0.18],[3,'sine',0.07]].forEach(([m,t,a])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type=t; o.frequency.value=freq*m; g.gain.value=a;
+      o.connect(g); g.connect(master); o.start(now); o.stop(now+dur+0.2);
+    });
+    master.gain.setValueAtTime(0,now);
+    master.gain.linearRampToValueAtTime(0.5,now+0.008);
+    master.gain.exponentialRampToValueAtTime(0.22,now+0.06);
+    master.gain.setValueAtTime(0.22,now+dur*0.75);
+    master.gain.exponentialRampToValueAtTime(0.001,now+dur+0.15);
+  } catch(e){}
+}
+
+function openWarmup() {
+  document.getElementById('wuRoom').classList.add('open');
+  renderWuPiano(null);
+  renderWuControls();
+  renderWuExList();
+  wuSt.currentRoot = wuSt.startNote;
+  wuSt.noteIdx = 0;
+}
+function closeWarmup() { stopWuPlayback(); document.getElementById('wuRoom').classList.remove('open'); }
+
+// ── Piano ─────────────────────────────────────────────────
+function renderWuPiano(hlMidi) {
+  const el=document.getElementById('wuPiano'); if(!el) return;
+  let html='';
+  for (let oct=2;oct<=4;oct++) {
+    const base=(oct+1)*12;
+    html+=`<div class="wu-oct">`;
+    [0,2,4,5,7,9,11].forEach(s=>{
+      const m=base+s;
+      html+=`<div class="wu-wk${m===hlMidi?' lit':''}" onclick="wuKeyClick(${m})" title="${wuMidiName(m)}">`;
+      if(s===0) html+=`<span class="wu-octlbl">C${oct}</span>`;
+      html+=`</div>`;
+    });
+    [[1,20],[3,48],[6,104],[8,132],[10,160]].forEach(([s,left])=>{
+      const m=base+s;
+      html+=`<div class="wu-bk${m===hlMidi?' lit':''}" style="left:${left}px" onclick="wuKeyClick(${m})" title="${wuMidiName(m)}"></div>`;
+    });
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+  if (hlMidi!=null) {
+    const oct=Math.floor(hlMidi/12)-2;
+    const wrap=el.closest('.wu-piano-wrap');
+    if(wrap) wrap.scrollLeft=Math.max(0,oct*196-60);
+  }
+}
+function wuKeyClick(midi) {
+  const dur=60/wuSt.bpm;
+  playWuNote(midi,dur*0.9);
+  renderWuPiano(midi);
+  const el=document.getElementById('wuCurNote');
+  if(el){el.textContent=wuMidiName(midi);el.className='wu-cur-note on';}
+  setTimeout(()=>{
+    renderWuPiano(wuSt.running?null:null);
+    const e=document.getElementById('wuCurNote');
+    if(e&&!wuSt.running){e.textContent='—';e.className='wu-cur-note';}
+  },dur*900+100);
+}
+
+// ── Controls ──────────────────────────────────────────────
+function buildNoteOpts(sel){
+  let h='';
+  for(let m=36;m<=79;m++) h+=`<option value="${m}"${m===sel?' selected':''}>${wuMidiName(m)}</option>`;
+  return h;
+}
+function renderWuControls(){
+  const el=document.getElementById('wuControls'); if(!el) return;
+  el.innerHTML=`
+    <div class="wu-ctrl"><div class="lbl">BPM</div>
+      <div class="wu-bpm-row">
+        <input type="range" min="30" max="180" value="${wuSt.bpm}"
+          oninput="wuSt.bpm=+this.value;document.getElementById('wuBpmVal').textContent=this.value">
+        <span class="wu-bpm-val" id="wuBpmVal">${wuSt.bpm}</span>
+      </div>
+    </div>
+    <div class="wu-ctrl"><div class="lbl">Старт (тоника)</div>
+      <select onchange="wuSt.startNote=+this.value;wuSt.currentRoot=+this.value">${buildNoteOpts(wuSt.startNote)}</select>
+    </div>
+    <div class="wu-ctrl"><div class="lbl">Верхняя нота</div>
+      <select onchange="wuSt.endNote=+this.value">${buildNoteOpts(wuSt.endNote)}</select>
+    </div>
+    <div class="wu-ctrl"><div class="lbl">Шаг транспозиции</div>
+      <select onchange="wuSt.step=+this.value">
+        <option value="1"${wuSt.step===1?' selected':''}>½ тона (полутон)</option>
+        <option value="2"${wuSt.step===2?' selected':''}>1 тон (целый тон)</option>
+      </select>
+    </div>
+    <div class="wu-transport">
+      <button class="wu-tbtn go" id="wuPlayBtn" onclick="toggleWuPlayback()">&#9654; Старт</button>
+      <button class="wu-tbtn" onclick="stopWuPlayback()">&#9632; Стоп</button>
+    </div>`;
+}
+
+// ── Exercise list ──────────────────────────────────────────
+function renderWuExList(){
+  const el=document.getElementById('wuExList'); if(!el) return;
+  el.innerHTML=getAllWarmups().map(wu=>{
+    const isCust=!wu.id.startsWith('bw');
+    const isSel=wu.id===wuSt.selectedId;
+    return `<div class="wu-ex${isSel?' sel':''}" onclick="selectWu('${wu.id}')">
+      <div class="wu-ex-info">
+        <div class="wu-ex-name">${wu.name}</div>
+        <div class="wu-ex-sub">слог: ${wu.syllable} &nbsp;·&nbsp; паттерн: ${wu.pattern.join(', ')} &nbsp;·&nbsp; ${wu.defaultBpm||wu.bpm||72} BPM</div>
+      </div>
+      ${isCust?`<button class="wu-ex-del" onclick="event.stopPropagation();delCustomWarmup('${wu.id}')">&#10005;</button>`:''}
+    </div>`;
+  }).join('');
+}
+function selectWu(id){
+  stopWuPlayback();
+  wuSt.selectedId=id;
+  const wu=getAllWarmups().find(w=>w.id===id);
+  if(wu){ wuSt.bpm=wu.defaultBpm||wu.bpm||72; wuSt.startNote=wu.startNote||48; wuSt.endNote=wu.endNote||65; wuSt.step=wu.step||1; wuSt.currentRoot=wuSt.startNote; }
+  renderWuControls(); renderWuExList();
+}
+
+// ── Playback ───────────────────────────────────────────────
+function toggleWuPlayback(){
+  if(wuSt.running){
+    wuSt.running=false; clearTimeout(wuSt.timeout);
+    const b=document.getElementById('wuPlayBtn');
+    if(b){b.textContent='&#9654; Продолжить';b.className='wu-tbtn go';}
+    return;
+  }
+  const wu=getAllWarmups().find(w=>w.id===wuSt.selectedId); if(!wu) return;
+  wuSt.running=true;
+  const b=document.getElementById('wuPlayBtn');
+  if(b){b.innerHTML='&#9646;&#9646; Пауза';b.className='wu-tbtn go';}
+  wuTick(wu);
+}
+function stopWuPlayback(){
+  wuSt.running=false; clearTimeout(wuSt.timeout);
+  wuSt.noteIdx=0; wuSt.currentRoot=wuSt.startNote;
+  renderWuPiano(null);
+  const n=document.getElementById('wuCurNote'), s=document.getElementById('wuSylDisp'), p=document.getElementById('wuProgInfo');
+  if(n){n.textContent='—';n.className='wu-cur-note';}
+  if(s){s.textContent='•';s.className='wu-syllable-disp';}
+  if(p) p.textContent='—';
+  const b=document.getElementById('wuPlayBtn');
+  if(b){b.innerHTML='&#9654; Старт';b.className='wu-tbtn go';}
+}
+function wuTick(wu){
+  if(!wuSt.running) return;
+  const midi=wuSt.currentRoot+(wu.pattern[wuSt.noteIdx]||0);
+  const beatSec=60/wuSt.bpm;
+  playWuNote(midi, beatSec*0.88);
+  renderWuPiano(midi);
+  const n=document.getElementById('wuCurNote'), s=document.getElementById('wuSylDisp'), p=document.getElementById('wuProgInfo');
+  if(n){n.textContent=wuMidiName(midi);n.className='wu-cur-note on';}
+  const parts=wu.syllable.split('-'); const sylPart=parts[wuSt.noteIdx%parts.length];
+  if(s){s.textContent=sylPart.toUpperCase();s.className='wu-syllable-disp on';}
+  const total=Math.ceil((wuSt.endNote-wuSt.startNote)/wuSt.step)+1;
+  const cur=Math.round((wuSt.currentRoot-wuSt.startNote)/wuSt.step)+1;
+  if(p) p.textContent=`${wuMidiName(wuSt.currentRoot)} · ${cur}/${total}`;
+  wuSt.noteIdx++;
+  if(wuSt.noteIdx>=wu.pattern.length){
+    wuSt.noteIdx=0;
+    wuSt.currentRoot+=wuSt.step;
+    if(wuSt.currentRoot>wuSt.endNote){
+      wuSt.timeout=setTimeout(()=>{
+        stopWuPlayback();
+        const pg=document.getElementById('wuProgInfo');
+        if(pg) pg.textContent='✓ завершено';
+      },beatSec*1200);
+      return;
+    }
+  }
+  wuSt.timeout=setTimeout(()=>wuTick(wu), beatSec*1000);
+}
+
+// ── Custom warmups ─────────────────────────────────────────
+function toggleWuAddForm(){
+  const el=document.getElementById('wuAddForm');
+  if(el) el.style.display=el.style.display==='none'?'':'none';
+}
+function addCustomWarmup(){
+  const name=document.getElementById('wuFName').value.trim(); if(!name) return;
+  const syl=document.getElementById('wuFSyl').value.trim()||'а';
+  const patRaw=document.getElementById('wuFPat').value.trim();
+  const bpm=parseInt(document.getElementById('wuFBpm').value)||72;
+  const pat=patRaw.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
+  if(!pat.length){alert('Введи паттерн нотами-интервалами');return;}
+  const arr=getCustomWarmups();
+  arr.push({id:'cw_'+Date.now(),name,syllable:syl,pattern:pat,defaultBpm:bpm,startNote:wuSt.startNote,endNote:wuSt.endNote,step:1});
+  setCustomWarmups(arr);
+  ['wuFName','wuFSyl','wuFPat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('wuAddForm').style.display='none';
+  renderWuExList();
+}
+function delCustomWarmup(id){
+  setCustomWarmups(getCustomWarmups().filter(w=>w.id!==id));
+  if(wuSt.selectedId===id) wuSt.selectedId='bw1';
+  renderWuExList();
 }
 
 // ═══════════════════════════════════════════════════════════
