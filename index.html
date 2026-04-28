@@ -93,8 +93,10 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .timer-disp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
 .timer-disp.running{color:var(--ok);}
 .timer-tracked{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ok);text-transform:uppercase;letter-spacing:.08em;}
-.day.today>.dhead{background:#1e1818!important;border-top:2px solid var(--acc);}
+.day.today{outline:1px solid rgba(255,58,47,.4);}
+.day.today>.dhead{background:#2c1717!important;border-top:3px solid var(--acc)!important;}
 .day.today .dname{color:var(--acc);}
+.today-badge{font-family:'JetBrains Mono',monospace;font-size:7px;text-transform:uppercase;letter-spacing:.12em;color:var(--acc);margin-bottom:1px;}
 .tlbl{display:block;font-size:11px;font-weight:500;line-height:1.3;margin-bottom:1px;color:var(--txt);}
 .tlbl:hover{color:var(--acc);}
 .task.done-task .tlbl{text-decoration:line-through;}
@@ -290,7 +292,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v9 · 2026-04-28 01:42</div>
+<div class="ver-bar">v9 · 2026-04-28 01:50</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -823,7 +825,7 @@ function renderWeek(wn) {
 
     return `<div class="day ${type}${isEmpty?' empty-day':''}${isExpanded?' expanded':''}${isToday?' today':''}" id="day-${wn}-${di}">
       <div class="dhead" onclick="toggleDay(${wn},${di})">
-        <div><div class="dname">${DNAMES[di]}</div><div class="dtype">${dlabel}</div></div>
+        <div><div class="dname">${DNAMES[di]}</div>${isToday?'<div class="today-badge">сегодня</div>':''}<div class="dtype">${dlabel}</div></div>
         <span class="dtoggle">${isExpanded?'−':'+'}</span>
       </div>
       <div class="dcollapse dbody">
