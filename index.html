@@ -87,6 +87,10 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .task.practice .ttype{color:var(--acc);}
 .task.test-t .ttype{color:var(--ok);}
 .task.custom .ttype{color:var(--purple);}
+.task.warmup{border-left-color:var(--warn);}
+.task.warmup .ttype{color:var(--warn);}
+.wu-task-btn{background:none;border:none;padding:0;text-align:left;cursor:pointer;font-size:11px;font-weight:600;font-family:'Outfit',sans-serif;line-height:1.3;margin-bottom:1px;color:var(--warn);}
+.wu-task-btn:hover{color:var(--acc);text-decoration:underline;}
 .task-timer{display:flex;align-items:center;gap:5px;margin:3px 0 2px 18px;}
 .timer-play{background:none;border:1px solid var(--brd);color:var(--muted);font-size:9px;line-height:1;padding:2px 8px;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;transition:border-color .12s,color .12s;}
 .timer-play:hover,.timer-play.running{border-color:var(--ok);color:var(--ok);}
@@ -347,7 +351,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v10 · 2026-04-28 02:20</div>
+<div class="ver-bar">v10 · 2026-04-28 02:35</div>
 
 <!-- WARM UP ROOM -->
 <div class="wu-room" id="wuRoom">
@@ -388,7 +392,6 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <!-- SYNC BAR -->
 <div class="sync-bar">
   <span class="sync-st" id="sync-status">— не настроено</span>
-  <button class="sync-btn" onclick="openWarmup()">&#9834; Warm Up</button>
   <button class="sync-btn" onclick="togglePitchPanel()">Pitch</button>
   <button class="sync-btn" onclick="openSetup()">&#9881; Gist Sync</button>
 </div>
@@ -838,9 +841,10 @@ function renderWeek(wn) {
     const tasksHtml = allTasks.map(t => {
       const done = isDone(t.id);
       const isCustom = !!t.custom;
-      const baseLabel = {theory:'Теория',practice:'Практика','test-t':'Тест',custom:'Custom'}[t.type]||'';
+      const baseLabel = {theory:'Теория',practice:'Практика','test-t':'Тест',custom:'Custom',warmup:'Warm Up'}[t.type]||'';
       const catSuffix = t.trainingType==='voice' ? ' · ГОЛОС' : t.trainingType==='ear' ? ' · СЛУХ' : '';
       const typeLabel = baseLabel + catSuffix;
+      const isWarmup = t.type === 'warmup';
       const tracked = S['time:'+t.id];
       let timerHtml = '';
       if (done && (tracked || t.duration)) {
@@ -858,9 +862,11 @@ function renderWeek(wn) {
           <input type="checkbox" class="tcb" ${done?'checked':''} onchange="toggleTask(${wn},'${t.id}',this.checked)">
           <div class="tcontent">
             <div class="ttype">${typeLabel}</div>
-            ${t.url
-              ? `<a class="tlbl" href="${t.url}" target="_blank">${t.label}</a>`
-              : `<span class="tlbl">${t.label}</span>`}
+            ${isWarmup
+              ? `<button class="wu-task-btn" onclick="openWarmup()">&#9834; ${t.label||'Warm Up Room'}</button>`
+              : t.url
+                ? `<a class="tlbl" href="${t.url}" target="_blank">${t.label}</a>`
+                : `<span class="tlbl">${t.label}</span>`}
             ${t.meta?`<div class="tmeta">${t.meta}</div>`:''}
           </div>
           <div class="task-acts">
@@ -883,19 +889,20 @@ function renderWeek(wn) {
     const sel   = (v,cur) => v===cur ? 'selected' : '';
     const formHtml = `<div class="tform${isFormOpen?' open':''}" id="tf-${wn}-${di}">
       <select id="fty-${wn}-${di}" onchange="onTypeChange(this.value,${wn},${di})">
+        <option value="warmup" ${sel('warmup',fType)}>Warm Up</option>
         <option value="theory" ${sel('theory',fType)}>Теория</option>
         <option value="practice" ${sel('practice',fType)}>Практика</option>
         <option value="test-t" ${sel('test-t',fType)}>Тест</option>
         <option value="custom" ${sel('custom',fType)}>Custom</option>
       </select>
-      <div id="fcat-wrap-${wn}-${di}" ${fType!=='practice'?'style="display:none"':''}>
+      <div id="fcat-wrap-${wn}-${di}" ${(fType!=='practice')?'style="display:none"':''}>
         <select id="fcat-${wn}-${di}">
           <option value="voice" ${sel('voice',fCat)}>Голос</option>
           <option value="ear" ${sel('ear',fCat)}>Слух</option>
         </select>
       </div>
       <input type="text" id="flb-${wn}-${di}" placeholder="Название" value="${fLbl}">
-      <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)" value="${fUrl}">
+      <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)" value="${fUrl}" ${fType==='warmup'?'style="display:none"':''}>
       <select id="fdur-${wn}-${di}">
         <option value="" ${sel('',fDur)}>без таймера</option>
         <option value="5" ${sel('5',fDur)}>5 мин</option>
@@ -1235,8 +1242,10 @@ function findTask(id) {
 }
 
 function onTypeChange(type, wn, di) {
-  const el = document.getElementById('fcat-wrap-'+wn+'-'+di);
-  if (el) el.style.display = type==='practice' ? '' : 'none';
+  const cat = document.getElementById('fcat-wrap-'+wn+'-'+di);
+  const url = document.getElementById('fur-'+wn+'-'+di);
+  if (cat) cat.style.display = type==='practice' ? '' : 'none';
+  if (url) url.style.display = type==='warmup' ? 'none' : '';
 }
 
 function toggleTimer(taskId, totalSecs) {
