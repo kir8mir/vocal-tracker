@@ -58,7 +58,13 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .dname{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.04em;line-height:1;}
 .dtype{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:2px;}
 .day.train .dhead{background:#1a1a1e;}
-.day.train .dtype{color:var(--acc);}
+.day.train .dtype{color:var(--muted);}
+.day.voice .dhead{background:#1e1818;}
+.day.voice .dtype{color:var(--acc);}
+.day.ear .dhead{background:#16191f;}
+.day.ear .dtype{color:var(--blue);}
+.day.voice-ear .dhead{background:#1b1720;}
+.day.voice-ear .dtype{color:var(--purple);}
 .day.test .dhead{background:#141d16;}
 .day.test .dtype{color:var(--ok);}
 .dbody{padding:8px;flex:1;display:flex;flex-direction:column;gap:7px;}
@@ -92,6 +98,28 @@ h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.04em;text-trans
 .task.done-task .tlbl{text-decoration:line-through;}
 .tmeta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
 .tdel{background:none;border:none;color:#383840;cursor:pointer;font-size:12px;padding:1px 3px;line-height:1;flex-shrink:0;margin-top:1px;}
+.tdel:hover{color:var(--acc);}
+.task-acts{display:flex;gap:0;flex-shrink:0;margin-top:1px;}
+.tact{background:none;border:none;color:#383840;cursor:pointer;font-size:11px;padding:1px 4px;line-height:1;transition:color .12s;}
+.tact.edit:hover{color:var(--blue);}
+.tact.dup:hover{color:var(--ok);}
+.tact.del:hover{color:var(--acc);}
+/* ── COPY MODAL ── */
+.copy-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:110;align-items:center;justify-content:center;padding:16px;}
+.copy-bg.open{display:flex;}
+.copy-box{background:var(--surf);border:1px solid var(--brd);width:100%;max-width:360px;}
+.copy-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--brd);font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.04em;}
+.copy-head button{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;}
+.copy-head button:hover{color:var(--acc);}
+.copy-body{padding:14px 15px;display:flex;flex-direction:column;gap:10px;}
+.copy-preview{font-size:11px;color:var(--muted);padding:7px 9px;background:var(--s2);border:1px solid var(--brd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.copy-row{display:flex;flex-wrap:wrap;gap:4px;}
+.cwbtn,.cdbtn{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;padding:4px 9px;border:1px solid var(--brd);background:var(--s2);color:var(--muted);cursor:pointer;transition:all .12s;}
+.cwbtn:hover:not(.active),.cdbtn:hover:not(.active){border-color:var(--muted);color:var(--txt);}
+.cwbtn.active{border-color:var(--acc);color:var(--acc);}
+.cdbtn.active{border-color:var(--ok);color:var(--ok);}
+.copy-do{width:100%;padding:8px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.09em;border:none;background:var(--ok);color:#000;cursor:pointer;}
+.copy-do:disabled{opacity:.3;cursor:default;}
 .tdel:hover{color:var(--acc);}
 
 /* ── ADD TASK ── */
@@ -260,7 +288,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v8 · 2026-04-28 01:10</div>
+<div class="ver-bar">v9 · 2026-04-28 01:35</div>
 
 <!-- SYNC BAR -->
 <div class="sync-bar">
@@ -372,6 +400,25 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 </section>
 
 <footer>Vocal Roadmap v5 · github pages ready</footer>
+</div>
+
+<!-- COPY TASK MODAL -->
+<div class="copy-bg" id="copyModal" onclick="if(event.target===this)closeCopyPanel()">
+  <div class="copy-box">
+    <div class="copy-head"><span>Дублировать задачу</span><button onclick="closeCopyPanel()">&#10005;</button></div>
+    <div class="copy-body">
+      <div class="copy-preview" id="copyPreview"></div>
+      <div>
+        <div class="lbl" style="margin-bottom:5px">Неделя</div>
+        <div class="copy-row" id="copyWeeks"></div>
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:5px">День</div>
+        <div class="copy-row" id="copyDays"></div>
+      </div>
+      <button class="copy-do" id="copyDoBtn" onclick="doCopy()" disabled>Скопировать</button>
+    </div>
+  </div>
 </div>
 
 <!-- PITCH DETECTOR -->
@@ -677,7 +724,12 @@ function renderWeek(wn) {
     const isToday  = di === todayDi;
     const hasVoice = allTasks.some(t => t.type==='practice' && t.trainingType!=='ear');
     const hasEar   = allTasks.some(t => t.trainingType==='ear');
-    const type   = isSunday ? 'test' : hasTasks ? 'train' : 'rest';
+    const type   = isSunday ? 'test'
+      : (hasVoice && hasEar) ? 'voice-ear'
+      : hasEar   ? 'ear'
+      : hasVoice ? 'voice'
+      : hasTasks ? 'train'
+      : 'rest';
     const dlabel = isSunday ? 'Тест'
       : (hasVoice && hasEar) ? 'Голос + Слух'
       : hasEar   ? 'Тренировка Слуха'
@@ -714,31 +766,54 @@ function renderWeek(wn) {
               : `<span class="tlbl">${t.label}</span>`}
             ${t.meta?`<div class="tmeta">${t.meta}</div>`:''}
           </div>
-          ${isCustom?`<button class="tdel" onclick="delTask(${wn},${di},'${t.id}')">&#10005;</button>`:''}
+          <div class="task-acts">
+            ${isCustom?`<button class="tact edit" onclick="openEditForm(${wn},${di},'${t.id}')" title="Изменить">&#9998;</button>`:''}
+            <button class="tact dup" onclick="openCopyPanel('${t.id}')" title="Дублировать">&#10697;</button>
+            ${isCustom?`<button class="tact del" onclick="delTask(${wn},${di},'${t.id}')">&#10005;</button>`:''}
+          </div>
         </div>
         ${timerHtml}
       </div>`;
     }).join('');
 
+    const editTask = isFormOpen && openForm.editId ? findTask(openForm.editId) : null;
+    const fType = editTask ? editTask.type : 'practice';
+    const fCat  = editTask ? (editTask.trainingType||'voice') : 'voice';
+    const fDur  = editTask && editTask.duration ? String(editTask.duration) : '';
+    const fLbl  = editTask ? (editTask.label||'').replace(/"/g,'&quot;') : '';
+    const fUrl  = editTask ? (editTask.url||'').replace(/"/g,'&quot;') : '';
+    const fMeta = editTask ? (editTask.meta||'').replace(/"/g,'&quot;') : '';
+    const sel   = (v,cur) => v===cur ? 'selected' : '';
     const formHtml = `<div class="tform${isFormOpen?' open':''}" id="tf-${wn}-${di}">
       <select id="fty-${wn}-${di}" onchange="onTypeChange(this.value,${wn},${di})">
-        <option value="theory">Теория</option><option value="practice" selected>Практика</option>
-        <option value="test-t">Тест</option><option value="custom">Custom</option>
+        <option value="theory" ${sel('theory',fType)}>Теория</option>
+        <option value="practice" ${sel('practice',fType)}>Практика</option>
+        <option value="test-t" ${sel('test-t',fType)}>Тест</option>
+        <option value="custom" ${sel('custom',fType)}>Custom</option>
       </select>
-      <div id="fcat-wrap-${wn}-${di}">
-        <select id="fcat-${wn}-${di}"><option value="voice">Голос</option><option value="ear">Слух</option></select>
+      <div id="fcat-wrap-${wn}-${di}" ${fType!=='practice'?'style="display:none"':''}>
+        <select id="fcat-${wn}-${di}">
+          <option value="voice" ${sel('voice',fCat)}>Голос</option>
+          <option value="ear" ${sel('ear',fCat)}>Слух</option>
+        </select>
       </div>
-      <input type="text" id="flb-${wn}-${di}" placeholder="Название">
-      <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)">
+      <input type="text" id="flb-${wn}-${di}" placeholder="Название" value="${fLbl}">
+      <input type="text" id="fur-${wn}-${di}" placeholder="URL (необязательно)" value="${fUrl}">
       <select id="fdur-${wn}-${di}">
-        <option value="">без таймера</option><option value="5">5 мин</option>
-        <option value="10">10 мин</option><option value="15">15 мин</option>
-        <option value="20">20 мин</option><option value="30">30 мин</option>
-        <option value="60">60 мин</option><option value="120">120 мин</option>
+        <option value="" ${sel('',fDur)}>без таймера</option>
+        <option value="5" ${sel('5',fDur)}>5 мин</option>
+        <option value="10" ${sel('10',fDur)}>10 мин</option>
+        <option value="15" ${sel('15',fDur)}>15 мин</option>
+        <option value="20" ${sel('20',fDur)}>20 мин</option>
+        <option value="30" ${sel('30',fDur)}>30 мин</option>
+        <option value="60" ${sel('60',fDur)}>60 мин</option>
+        <option value="120" ${sel('120',fDur)}>120 мин</option>
       </select>
-      <input type="text" id="fme-${wn}-${di}" placeholder="Заметка (необязательно)">
+      <input type="text" id="fme-${wn}-${di}" placeholder="Заметка (необязательно)" value="${fMeta}">
       <div class="tform-btns">
-        <button class="btn-ok" onclick="saveTask(${wn},${di})">Сохранить</button>
+        ${editTask
+          ? `<button class="btn-ok" onclick="updateTask(${wn},${di})">Обновить</button>`
+          : `<button class="btn-ok" onclick="saveTask(${wn},${di})">Сохранить</button>`}
         <button class="btn-no" onclick="closeForm()">Отмена</button>
       </div>
     </div>`;
@@ -976,6 +1051,71 @@ function addWeek() {
   document.getElementById('awGoal').value  = '';
   document.getElementById('awForm').classList.remove('open');
   renderTabs();
+}
+
+function openEditForm(wn, di, taskId) {
+  openForm = {wn, di, editId: taskId};
+  renderWeek(wn);
+  setTimeout(() => { const el=document.getElementById(`flb-${wn}-${di}`); if(el) el.focus(); }, 50);
+}
+
+function updateTask(wn, di) {
+  const taskId = openForm.editId; if (!taskId) return;
+  const label = document.getElementById(`flb-${wn}-${di}`).value.trim(); if (!label) return;
+  const type  = document.getElementById(`fty-${wn}-${di}`).value;
+  const url   = document.getElementById(`fur-${wn}-${di}`).value.trim()||null;
+  const meta  = document.getElementById(`fme-${wn}-${di}`).value.trim();
+  const catEl = document.getElementById(`fcat-${wn}-${di}`);
+  const durEl = document.getElementById(`fdur-${wn}-${di}`);
+  const trainingType = (type==='practice'&&catEl) ? catEl.value : null;
+  const duration     = (durEl&&durEl.value) ? parseInt(durEl.value) : null;
+  const arr = getCustomTasks(wn, di);
+  const idx = arr.findIndex(t => t.id===taskId);
+  if (idx>=0) { arr[idx]={...arr[idx], type, label, url, meta, trainingType, duration}; setCustomTasks(wn,di,arr); }
+  openForm=null; renderWeek(wn); renderTabs();
+}
+
+// Copy task
+let copyState = null;
+
+function openCopyPanel(taskId) {
+  const t = findTask(taskId); if (!t) return;
+  copyState = {taskId, targetWn: activeWeek, targetDi: null};
+  document.getElementById('copyPreview').textContent = t.label;
+  renderCopyModal();
+  document.getElementById('copyModal').classList.add('open');
+}
+
+function closeCopyPanel() {
+  copyState=null;
+  document.getElementById('copyModal').classList.remove('open');
+}
+
+function renderCopyModal() {
+  if (!copyState) return;
+  const weeksHtml = allWeeks().filter(w=>!w.locked).map(w =>
+    `<button class="cwbtn${copyState.targetWn===w.num?' active':''}" onclick="setCopyWeek(${w.num})">Нед.${w.num}</button>`
+  ).join('');
+  const daysHtml = DNAMES.map((n,di) =>
+    `<button class="cdbtn${copyState.targetDi===di?' active':''}" onclick="setCopyDay(${di})">${n}</button>`
+  ).join('');
+  document.getElementById('copyWeeks').innerHTML = weeksHtml;
+  document.getElementById('copyDays').innerHTML  = daysHtml;
+  document.getElementById('copyDoBtn').disabled  = copyState.targetDi===null;
+}
+
+function setCopyWeek(wn) { copyState.targetWn=wn; copyState.targetDi=null; renderCopyModal(); }
+function setCopyDay(di)  { copyState.targetDi=di; renderCopyModal(); }
+
+function doCopy() {
+  if (!copyState||copyState.targetDi===null) return;
+  const src = findTask(copyState.taskId); if (!src) return;
+  const arr = getCustomTasks(copyState.targetWn, copyState.targetDi);
+  const newId = `c_${copyState.targetWn}_${copyState.targetDi}_${Date.now()}`;
+  arr.push({...src, id:newId, custom:true});
+  setCustomTasks(copyState.targetWn, copyState.targetDi, arr);
+  closeCopyPanel();
+  renderWeek(activeWeek); renderTabs();
 }
 
 // ═══════════════════════════════════════════════════════════
