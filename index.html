@@ -247,13 +247,13 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 .wu-nav-back{background:none;border:1px solid var(--brd);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.09em;padding:5px 12px;cursor:pointer;white-space:nowrap;}
 .wu-nav-back:hover{border-color:var(--acc);color:var(--acc);}
 .wu-nav h2{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em;text-transform:uppercase;}
-.wu-piano-wrap{overflow-x:auto;padding:14px 16px 6px;background:var(--surf);border-bottom:1px solid var(--brd);flex-shrink:0;-webkit-overflow-scrolling:touch;}
-.wu-piano{display:inline-flex;position:relative;height:84px;gap:0;}
-.wu-oct{position:relative;display:flex;flex-shrink:0;}
-.wu-wk{width:28px;height:80px;background:#d8d8d0;border:1px solid #666;cursor:pointer;position:relative;z-index:1;flex-shrink:0;transition:background .07s;}
+.wu-piano-wrap{padding:0;background:var(--surf);border-bottom:1px solid var(--brd);flex-shrink:0;}
+.wu-piano{display:flex;position:relative;height:120px;width:100%;}
+.wu-oct{position:relative;display:flex;flex:1;}
+.wu-wk{flex:1;height:115px;background:#d8d8d0;border:1px solid #666;cursor:pointer;position:relative;z-index:1;transition:background .07s;}
 .wu-wk:hover{background:#bbb;}
 .wu-wk.lit{background:var(--acc)!important;border-color:var(--acc);}
-.wu-bk{width:17px;height:50px;background:#1e1e1e;position:absolute;top:0;z-index:2;cursor:pointer;border:1px solid #555;transition:background .07s;}
+.wu-bk{width:8.6%;height:70px;background:#1e1e1e;position:absolute;top:0;z-index:2;cursor:pointer;border:1px solid #555;transition:background .07s;}
 .wu-bk:hover{background:#444;}
 .wu-bk.lit{background:var(--acc)!important;}
 .wu-octlbl{position:absolute;bottom:3px;left:2px;font-family:'JetBrains Mono',monospace;font-size:7px;color:#888;pointer-events:none;}
@@ -351,7 +351,7 @@ footer{border-top:1px solid var(--brd);padding-top:16px;text-align:center;font-f
 <body>
 <div class="wrap">
 
-<div class="ver-bar">v10 · 2026-04-28 02:35</div>
+<div class="ver-bar">v11 · 2026-04-28 14:20</div>
 
 <!-- WARM UP ROOM -->
 <div class="wu-room" id="wuRoom">
@@ -1318,7 +1318,8 @@ function getAllWarmups()        { return [...BUILT_IN_WARMUPS,...getCustomWarmup
 
 let wuSt = {
   running:false, selectedId:'bw1', currentRoot:48,
-  noteIdx:0, timeout:null, bpm:72, startNote:48, endNote:65, step:1
+  noteIdx:0, timeout:null, bpm:72, startNote:48, endNote:65, step:1,
+  pauseSec:0, repeatFirst:false
 };
 
 let _wuCtx = null;
@@ -1366,9 +1367,9 @@ function renderWuPiano(hlMidi) {
       if(s===0) html+=`<span class="wu-octlbl">C${oct}</span>`;
       html+=`</div>`;
     });
-    [[1,20],[3,48],[6,104],[8,132],[10,160]].forEach(([s,left])=>{
+    [[1,'10.2%'],[3,'24.5%'],[6,'53.1%'],[8,'67.3%'],[10,'81.6%']].forEach(([s,left])=>{
       const m=base+s;
-      html+=`<div class="wu-bk${m===hlMidi?' lit':''}" style="left:${left}px" onclick="wuKeyClick(${m})" title="${wuMidiName(m)}"></div>`;
+      html+=`<div class="wu-bk${m===hlMidi?' lit':''}" style="left:${left}" onclick="wuKeyClick(${m})" title="${wuMidiName(m)}"></div>`;
     });
     html+=`</div>`;
   }
@@ -1419,6 +1420,21 @@ function renderWuControls(){
         <option value="1"${wuSt.step===1?' selected':''}>½ тона (полутон)</option>
         <option value="2"${wuSt.step===2?' selected':''}>1 тон (целый тон)</option>
       </select>
+    </div>
+    <div class="wu-ctrl"><div class="lbl">Пауза между сеq</div>
+      <select onchange="wuSt.pauseSec=+this.value">
+        <option value="0"${wuSt.pauseSec===0?' selected':''}>Нет</option>
+        <option value="0.5"${wuSt.pauseSec===0.5?' selected':''}>0.5 с</option>
+        <option value="1"${wuSt.pauseSec===1?' selected':''}>1 с</option>
+        <option value="2"${wuSt.pauseSec===2?' selected':''}>2 с</option>
+        <option value="3"${wuSt.pauseSec===3?' selected':''}>3 с</option>
+      </select>
+    </div>
+    <div class="wu-ctrl" style="justify-content:flex-end">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-top:16px">
+        <input type="checkbox" ${wuSt.repeatFirst?'checked':''} onchange="wuSt.repeatFirst=this.checked" style="accent-color:var(--acc);width:14px;height:14px;cursor:pointer">
+        <span class="lbl" style="margin:0;white-space:nowrap">Повтор первой ноты</span>
+      </label>
     </div>
     <div class="wu-transport">
       <button class="wu-tbtn go" id="wuPlayBtn" onclick="toggleWuPlayback()">&#9654; Старт</button>
@@ -1499,6 +1515,20 @@ function wuTick(wu){
       },beatSec*1200);
       return;
     }
+    const gapMs=(beatSec+wuSt.pauseSec)*1000;
+    if(wuSt.repeatFirst){
+      wuSt.timeout=setTimeout(()=>{
+        if(!wuSt.running) return;
+        const fm=wuSt.currentRoot+(wu.pattern[0]||0);
+        playWuNote(fm,beatSec*0.88); renderWuPiano(fm);
+        const rn=document.getElementById('wuCurNote');
+        if(rn){rn.textContent=wuMidiName(fm);rn.className='wu-cur-note on';}
+        wuSt.timeout=setTimeout(()=>wuTick(wu),beatSec*1000);
+      },gapMs);
+    } else {
+      wuSt.timeout=setTimeout(()=>wuTick(wu),gapMs);
+    }
+    return;
   }
   wuSt.timeout=setTimeout(()=>wuTick(wu), beatSec*1000);
 }
